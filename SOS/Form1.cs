@@ -40,15 +40,17 @@ namespace SOS
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Task.Run(() =>
-            {
-                UpdateMPO();
-                FileLogUpdate();
-            });
+            WebScrap.GetModelDigramas();
+            //Task.Run(() =>
+            //{
+            //    UpdateMPO();
+            //    FileLogUpdate();
+            //});
         }
 
         private void UpdateMPO()
         {
+            UILogUpdate("#Início - Procedimentos da Operação (MPO)");
             UILogUpdate("ons.org.br/ conectando...");
             List<ChildItem> docsMPO = WebScrap.ScrapMPOAsync("FURNAS").GetAwaiter().GetResult();
             var client = new WebClient();
@@ -111,7 +113,7 @@ namespace SOS
                     UILogUpdate($"{mopFile.Name} não foi possível atualização pelo link {mopLink}");
                 }
             }
+            UILogUpdate("#Término - Procedimentos da Operação (MPO)");
         }
-
     }
 }
