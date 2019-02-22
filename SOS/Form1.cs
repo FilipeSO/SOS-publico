@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -57,18 +58,23 @@ namespace SOS
             UILogUpdate("#Início - Diagramas ONS");
             UILogUpdate("cdre.org.br/ conectando...");
             List<Row> diagramasONS = WebScrap.ScrapOnsDiagramasAsync("fsaolive", "123123aA").GetAwaiter().GetResult();
+
+            FileInfo jsonInfoFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/Diagramas/info.json");
+            if (!jsonInfoFile.Directory.Exists) Directory.CreateDirectory(jsonInfoFile.Directory.FullName);
+
+            string jsonInfo = File.Exists(jsonInfoFile.FullName) ? File.ReadAllText(jsonInfoFile.FullName) : null; 
+            List<Row> localDiagramas = string.IsNullOrEmpty(jsonInfo) ? new List<Row>() : JsonConvert.DeserializeObject<List<Row>>(jsonInfo);
+
             var client = new WebScrap.CookieAwareWebClient();
+
             foreach (var diagrama in diagramasONS)
             {
                 UILogUpdate($"{diagrama.FileLeafRef} atualizando");
                 string diagramaLink = $"https://cdre.ons.org.br{diagrama.FileRef}";
-                diagrama.MpoAssunto = diagrama.MpoAssunto.Replace("&nbsp;", "");
-                diagrama.MpoAssunto = diagrama.MpoAssunto.Replace("<br>", "");
-                diagrama.MpoAssunto = Regex.Replace(diagrama.MpoAssunto, "[" + Regex.Escape(new string(System.IO.Path.GetInvalidFileNameChars())) + "]", "");
-                FileInfo diagramaFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/Diagramas/{diagrama.MpoAssunto}/{diagrama.FileLeafRef.Split('_').First()}.pdf"); //problema caminho folder muito longo
-                if (!diagramaFile.Directory.Exists) Directory.CreateDirectory(diagramaFile.Directory.FullName);
 
-                string revisao = File.Exists($"{diagramaFile.DirectoryName}/info.cfg") ? File.ReadAllText($"{diagramaFile.DirectoryName}/info.cfg") : null;
+                FileInfo diagramaFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/Diagramas/{diagrama.FileLeafRef.Split('_').First()}.pdf");
+                
+                string revisao = localDiagramas.Where(w=>w.FileLeafRef.Split('_').First() == diagrama.FileLeafRef.Split('_').First()).Select(s=>s.Modified).FirstOrDefault();
                 if (revisao == diagrama.Modified)
                 {
                     UILogUpdate($"{diagrama.FileLeafRef} já se encontra na revisão vigente");
@@ -78,13 +84,14 @@ namespace SOS
                 {
                     client.DownloadFile(diagramaLink, diagramaFile.FullName);
                     UILogUpdate($"{diagrama.FileLeafRef.Split('_').First()} atualizado da modificação {revisao} para modificação {diagrama.Modified} em {diagramaFile.FullName}");
-                    File.WriteAllText($"{diagramaFile.DirectoryName}/info.cfg", diagrama.Modified);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     UILogUpdate($"{diagrama.FileLeafRef.Split('_').First()} não foi possível atualização pelo link {diagramaLink}");
                 }
             }
+            string json = JsonConvert.SerializeObject(diagramasONS);
+            File.WriteAllText(jsonInfoFile.FullName, json);
             client.Dispose();
             UILogUpdate("#Término - Diagramas ONS");
         }
