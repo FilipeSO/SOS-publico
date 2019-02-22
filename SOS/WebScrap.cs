@@ -7,16 +7,23 @@ using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
+using System.Xml;
 
 namespace SOS
 {
     static class WebScrap
     {
+        private static CookieContainer cookieContainer = new CookieContainer();
+
         private static HttpClientHandler handler = new HttpClientHandler()
         {
-            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+            CookieContainer = cookieContainer,
+            AllowAutoRedirect = true
         };
         static HttpClient client = new HttpClient(handler);
+
         #region WEBSCRAP ONS MPO
         public static async Task<List<ChildItem>> ScrapMPOAsync(string agente)
         {
@@ -83,14 +90,81 @@ namespace SOS
 
         public static async void GetModelDigramas()
         {
-            //dar um jeito de conseguir os cookies de login
-            client.DefaultRequestHeaders.Add("Host", "cdre.ons.org.br");
+            await DiagramasAuthCDRE();
+
+            var cookies = handler.CookieContainer.GetCookies(new Uri("https://cdre.ons.org.br"));
             client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36");
-            client.DefaultRequestHeaders.Add("Cookie", " .ONSAUTH_PROD=D4F2F09CA9F465F271FF1D656C742A920471146DD025693CCFDE82B18BEB768EBAA905E09E070FEF8287542BC552B482D25E8C0CC987927A676649EFF08F52C83C92AAD53D4ABB25BF015D0170CFAAF27208BEE534AF8D87CCC3AD436B0C4CE867FBE89F5E6EDF850FC32A005AD59B62C1AA038A; FedAuth=77u/PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48U1A+MMe5LnR8cG9wZmVkZXJhdGlvbnByb3ZpZGVyfGZzYW9saXZlLDDHuS50fHBvcGZlZGVyYXRpb25wcm92aWRlcnxmc2FvbGl2ZSwxMzE5NTY4NDMwNzg3MDk1NDQsVHJ1ZSxENkg0RStuSHkySUNwN09vSC9vcnBwb1I2eWpqZmdZSEdpdThZWnVQZjlqeEpFSDAyUmRrNk94cmNMT2RxZHNQOVRyNythaU5LVDk1ajkzS1RjbmpqT2RhcXljMmtIelV0cmRrVDd1ZmhhRkEzaTFFQVdHUGFrb3dCcThXMnF0VWcyMmFuWWNpbFIzMElvSUdYMFpFc0VFRmxmL0tDTTVjdTRua2hnaUhrNndaSUgyMU5KS0gyaEN3OHFHOVpHRXNqQkk0VUxhaUprRVVwWWJJaVd0SkdISlFudzQ2MUp2VVFRYXN4ZXMvY2oxNmRCamxSRnlPb1VINlQ5elU3UlB6Z2R4OHpnbEU5bVBHWW9vM3NjVkhXVVYwdmNCRzF4dzZvSTljOGcrOExaRDR2OFA3cTdmZXZLRXE2YVV1dkJBc0orY2xUUWExWVowTnljd0hVZFVpQVE9PSxodHRwczovL2NkcmUub25zLm9yZy5ici88L1NQPg==;");
 
-            var resultPost = await client.PostAsync("https://cdre.ons.org.br/_layouts/15/inplview.aspx?List={04854BFA-7127-4E36-A4ED-3EE860D929E8}&View={C35C3494-CC49-4A71-9569-34BDE063C9B5}&ViewCount=73&IsXslView=TRUE&IsCSR=TRUE&Paged=TRUE&p_ID=1444&PageFirstRow=0", null);
-
+            string urlRaizDiagramas = "https://cdre.ons.org.br/_layouts/15/inplview.aspx?List={04854BFA-7127-4E36-A4ED-3EE860D929E8}&View={C35C3494-CC49-4A71-9569-34BDE063C9B5";
+            var resultPost = await client.PostAsync($"{urlRaizDiagramas}&PageFirstRow=1", null);
             var resultContent = await resultPost.Content.ReadAsStringAsync();
+            ModelDiagramasONS jsonDiagramas = JsonConvert.DeserializeObject<ModelDiagramasONS>(resultContent);
+            List<Row> diagramas = jsonDiagramas.Row.ToList(); //resultdo de 500 em 500
+
+            while (jsonDiagramas.NextHref != null)
+            {
+                resultPost = await client.PostAsync($"{urlRaizDiagramas}{jsonDiagramas.NextHref.TrimStart('?')}", null);
+                resultContent = await resultPost.Content.ReadAsStringAsync();
+                jsonDiagramas = JsonConvert.DeserializeObject<ModelDiagramasONS>(resultContent);
+                diagramas.AddRange(jsonDiagramas.Row.ToList());
+            }
+
+            //resultPost = await client.PostAsync("https://cdre.ons.org.br/_layouts/15/inplview.aspx?List={04854BFA-7127-4E36-A4ED-3EE860D929E8}&View={C35C3494-CC49-4A71-9569-34BDE063C9B5}&ViewCount=129&IsXslView=TRUE&IsCSR=TRUE&Paged=TRUE&p_ID=1444&PageFirstRow=501&View=c35c3494-cc49-4a71-9569-34bde063c9b5", null);
+            //resultContent = await resultPost.Content.ReadAsStringAsync();
+            //diagramas = JsonConvert.DeserializeObject<ModelDiagramasONS>(resultContent);
+
+
+            //resultPost = await client.PostAsync("https://cdre.ons.org.br/_layouts/15/inplview.aspx?List={04854BFA-7127-4E36-A4ED-3EE860D929E8}&View={C35C3494-CC49-4A71-9569-34BDE063C9B5}&ViewCount=129&IsXslView=TRUE&IsCSR=TRUE&Paged=TRUE&p_ID=2951&PageFirstRow=1001&View=c35c3494-cc49-4a71-9569-34bde063c9b5", null);
+            //resultContent = await resultPost.Content.ReadAsStringAsync();
+            //diagramas = JsonConvert.DeserializeObject<ModelDiagramasONS>(resultContent);
+
+            //resultPost = await client.PostAsync("https://cdre.ons.org.br/_layouts/15/inplview.aspx?List={04854BFA-7127-4E36-A4ED-3EE860D929E8}&View={C35C3494-CC49-4A71-9569-34BDE063C9B5}&ViewCount=129&IsXslView=TRUE&IsCSR=TRUE&Paged=TRUE&p_ID=4465&PageFirstRow=1501&View=c35c3494-cc49-4a71-9569-34bde063c9b5", null);
+            //resultContent = await resultPost.Content.ReadAsStringAsync();
+            //diagramas = JsonConvert.DeserializeObject<ModelDiagramasONS>(resultContent);
+
+            //resultPost = await client.PostAsync("https://cdre.ons.org.br/_layouts/15/inplview.aspx?List={04854BFA-7127-4E36-A4ED-3EE860D929E8}&View={C35C3494-CC49-4A71-9569-34BDE063C9B5}&ViewCount=129&IsXslView=TRUE&IsCSR=TRUE&Paged=TRUE&p_ID=5986&PageFirstRow=2001&View=c35c3494-cc49-4a71-9569-34bde063c9b5", null);
+            //resultContent = await resultPost.Content.ReadAsStringAsync();
+            //diagramas = JsonConvert.DeserializeObject<ModelDiagramasONS>(resultContent);
+
+            //resultPost = await client.PostAsync("https://cdre.ons.org.br/_layouts/15/inplview.aspx?List={04854BFA-7127-4E36-A4ED-3EE860D929E8}&View={C35C3494-CC49-4A71-9569-34BDE063C9B5}&ViewCount=129&IsXslView=TRUE&IsCSR=TRUE&Paged=TRUE&p_ID=7350&PageFirstRow=2501&View=c35c3494-cc49-4a71-9569-34bde063c9b5", null);
+            //resultContent = await resultPost.Content.ReadAsStringAsync();
+            //diagramas = JsonConvert.DeserializeObject<ModelDiagramasONS>(resultContent);
+
+
+            //?Paged=TRUE&p_ID=7350&PageFirstRow=2501&View=c35c3494-cc49-4a71-9569-34bde063c9b5
+        }
+
+        static async Task DiagramasAuthCDRE()
+        {
+            string requestBody = @"username=fsaolive&password=123123aA&submit.Signin=Entrar&CountLogin=0&CDRESolicitarCadastroUrl=http%3A%2F%2Fcdreweb.ons.org.br%2FCDRE%2FViews%2FSolicitarCadastro%2FSolicitarCadastro.aspx&POPAutenticacaoIntegradaUrl=https%3A%2F%2Facessointegrado.ons.org.br%2Facessointegrado%3FReturnUrl%3Dhttps%253a%252f%252fpops.ons.org.br%252fons.pop.federation%252fredirect%252f%253fwa%253dwsignin1.0%2526wtrealm%253d%252bhttps%25253a%25252f%25252fcdre.ons.org.br%25252f_trust%25252f%2526wctx%253dhttps%25253a%25252f%25252fcdre.ons.org.br%25252f_layouts%25252f15%25252fAuthenticate.aspx%25253fSource%25253d%2525252FMPODIAG%2525252FForms%2525252FDiags%2525252Easpx%2526wreply%253dhttps%25253a%25252f%25252fcdre.ons.org.br%25252f_trust%25252fdefault.aspx&PasswordRecoveryUrl=https%3A%2F%2Fpops.ons.org.br%2Fons.pop.federation%2Fpasswordrecovery%2F%3FReturnUrl%3Dhttps%253a%252f%252fpops.ons.org.br%252fons.pop.federation%252f%253fwa%253dwsignin1.0%2526wtrealm%253d%252bhttps%25253a%25252f%25252fcdre.ons.org.br%25252f_trust%25252f%2526wctx%253dhttps%25253a%25252f%25252fcdre.ons.org.br%25252f_layouts%25252f15%25252fAuthenticate.aspx%25253fSource%25253d%2525252FMPODIAG%2525252FForms%2525252FDiags%2525252Easpx%2526wreply%253dhttps%25253a%25252f%25252fcdre.ons.org.br%25252f_trust%25252fdefault.aspx";
+            var httpContent = new StringContent(requestBody, Encoding.UTF8, "application/x-www-form-urlencoded");
+
+            //ON.AUTH_PROD COOKIE
+            var resultPost = await client.PostAsync("https://pops.ons.org.br/ons.pop.federation/?wa=wsignin1.0&wtrealm=+https%3a%2f%2fcdre.ons.org.br%2f_trust%2f&wctx=https%3a%2f%2fcdre.ons.org.br%2f_layouts%2f15%2fAuthenticate.aspx%3fSource%3d%252F&wreply=https%3a%2f%2fcdre.ons.org.br%2f_trust%2fdefault.aspx", httpContent);
+
+            //XML AUTH GET
+            //resultPost = await client.GetAsync("https://pops.ons.org.br/ons.pop.federation/redirect/?wa=wsignin1.0&wtrealm=+https%3a%2f%2fcdre.ons.org.br%2f_trust%2f&wctx=https%3a%2f%2fcdre.ons.org.br%2f_layouts%2f15%2fAuthenticate.aspx%3fSource%3d%252F&wreply=https%3a%2f%2fcdre.ons.org.br%2f_trust%2fdefault.aspx");
+
+            //XML AUTH POST 
+            resultPost = await client.PostAsync("https://pops.ons.org.br/ons.pop.federation/redirect/?wa=wsignin1.0&wtrealm=+https%3a%2f%2fcdre.ons.org.br%2f_trust%2f&wctx=https%3a%2f%2fcdre.ons.org.br%2f_layouts%2f15%2fAuthenticate.aspx%3fSource%3d%252F&wreply=https%3a%2f%2fcdre.ons.org.br%2f_trust%2fdefault.aspx", null);
+            var content = await resultPost.Content.ReadAsStringAsync();
+
+            XmlDocument xml = new XmlDocument();
+            xml.LoadXml(content);
+
+            requestBody = "";
+            foreach (XmlNode node in xml.SelectNodes("//input[@name][@value]"))
+            {
+                requestBody += $"{node.Attributes["name"].Value}={HttpUtility.UrlEncode(node.Attributes["value"].Value)}&";
+            }
+            requestBody = requestBody.TrimEnd('&');
+            //requestBody = HttpUtility.UrlEncode(requestBody);
+            //requestBody = "";
+
+            httpContent = new StringContent(requestBody, Encoding.UTF8);
+
+            resultPost = await client.PostAsync("https://cdre.ons.org.br/_trust/", httpContent);
+            //var cookies = handler.CookieContainer.GetCookies(new Uri("https://cdre.ons.org.br"));
         }
 
         #endregion ONS DIAGRAMAS
