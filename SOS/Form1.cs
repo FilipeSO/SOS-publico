@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -40,12 +41,52 @@ namespace SOS
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            WebScrap.GetModelDigramas();
-            //Task.Run(() =>
-            //{
-            //    UpdateMPO();
-            //    FileLogUpdate();
-            //});
+
+            Task.Run(() =>
+            {
+                //UpdateMPO();
+                //FileLogUpdate();
+                UpdateDiagramasONS();
+                FileLogUpdate();
+
+            });
+        }
+
+        private void UpdateDiagramasONS()
+        {
+            UILogUpdate("#Início - Diagramas ONS");
+            UILogUpdate("cdre.org.br/ conectando...");
+            List<Row> diagramasONS = WebScrap.ScrapOnsDiagramasAsync("fsaolive", "123123aA").GetAwaiter().GetResult();
+            var client = new WebScrap.CookieAwareWebClient();
+            foreach (var diagrama in diagramasONS)
+            {
+                UILogUpdate($"{diagrama.FileLeafRef} atualizando");
+                string diagramaLink = $"https://cdre.ons.org.br{diagrama.FileRef}";
+                diagrama.MpoAssunto = diagrama.MpoAssunto.Replace("&nbsp;", "");
+                diagrama.MpoAssunto = diagrama.MpoAssunto.Replace("<br>", "");
+                diagrama.MpoAssunto = Regex.Replace(diagrama.MpoAssunto, "[" + Regex.Escape(new string(System.IO.Path.GetInvalidFileNameChars())) + "]", "");
+                FileInfo diagramaFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/Diagramas/{diagrama.MpoAssunto}/{diagrama.FileLeafRef.Split('_').First()}.pdf"); //problema caminho folder muito longo
+                if (!diagramaFile.Directory.Exists) Directory.CreateDirectory(diagramaFile.Directory.FullName);
+
+                string revisao = File.Exists($"{diagramaFile.DirectoryName}/info.cfg") ? File.ReadAllText($"{diagramaFile.DirectoryName}/info.cfg") : null;
+                if (revisao == diagrama.Modified)
+                {
+                    UILogUpdate($"{diagrama.FileLeafRef} já se encontra na revisão vigente");
+                    continue;
+                }
+                try
+                {
+                    client.DownloadFile(diagramaLink, diagramaFile.FullName);
+                    UILogUpdate($"{diagrama.FileLeafRef.Split('_').First()} atualizado da modificação {revisao} para modificação {diagrama.Modified} em {diagramaFile.FullName}");
+                    File.WriteAllText($"{diagramaFile.DirectoryName}/info.cfg", diagrama.Modified);
+                }
+                catch (Exception ex)
+                {
+                    UILogUpdate($"{diagrama.FileLeafRef.Split('_').First()} não foi possível atualização pelo link {diagramaLink}");
+                }
+            }
+            client.Dispose();
+            UILogUpdate("#Término - Diagramas ONS");
         }
 
         private void UpdateMPO()
@@ -113,6 +154,7 @@ namespace SOS
                     UILogUpdate($"{mopFile.Name} não foi possível atualização pelo link {mopLink}");
                 }
             }
+            client.Dispose();
             UILogUpdate("#Término - Procedimentos da Operação (MPO)");
         }
     }
