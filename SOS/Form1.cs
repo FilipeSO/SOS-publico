@@ -45,10 +45,10 @@ namespace SOS
 
             Task.Run(() =>
             {
-                //UpdateMPO();
-                //FileLogUpdate();
-                UpdateDiagramasONS();
+                UpdateMPO();
                 FileLogUpdate();
+                //UpdateDiagramasONS();
+                //FileLogUpdate();
 
             });
         }
@@ -101,15 +101,20 @@ namespace SOS
             UILogUpdate("#Início - Procedimentos da Operação (MPO)");
             UILogUpdate("ons.org.br/ conectando...");
             List<ChildItem> docsMPO = WebScrap.ScrapMPOAsync("FURNAS").GetAwaiter().GetResult();
+            FileInfo jsonInfoFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/info.json");
+            if (!jsonInfoFile.Directory.Exists) Directory.CreateDirectory(jsonInfoFile.Directory.FullName);
+
+            string jsonInfo = File.Exists(jsonInfoFile.FullName) ? File.ReadAllText(jsonInfoFile.FullName) : null;
+            List<ChildItem> localDocsMPO = string.IsNullOrEmpty(jsonInfo) ? new List<ChildItem>() : JsonConvert.DeserializeObject<List<ChildItem>>(jsonInfo);
+
             var client = new WebClient();
             foreach (var doc in docsMPO)
             {
                 UILogUpdate($"{doc.MpoCodigo} atualizando");
                 string docLink = $"http://ons.org.br{doc.FileRef}";
-                FileInfo docFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/{doc.MpoCodigo}/{doc.MpoCodigo}.pdf");
-                if (!docFile.Directory.Exists) Directory.CreateDirectory(docFile.Directory.FullName);
+                FileInfo docFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/{doc.MpoCodigo}.pdf");
 
-                string revisao = File.Exists($"{docFile.DirectoryName}/info.cfg") ? File.ReadAllText($"{docFile.DirectoryName}/info.cfg") : null;
+                string revisao = localDocsMPO.Where(w => w.MpoCodigo == doc.MpoCodigo).Select(s => s._Revision).FirstOrDefault();
                 if (revisao == doc._Revision)
                 {
                     UILogUpdate($"{doc.MpoCodigo} já se encontra na revisão vigente");
@@ -119,12 +124,6 @@ namespace SOS
                 {
                     client.DownloadFile(docLink, docFile.FullName);
                     UILogUpdate($"{doc.MpoCodigo} atualizado da revisão {revisao} para revisão {doc._Revision} em {docFile.FullName}");
-                    File.WriteAllText($"{docFile.DirectoryName}/info.cfg", doc._Revision);
-                    if (doc.MpoAlteradosPelasMops != null)
-                    {
-                        File.WriteAllText($"{docFile.DirectoryName}/mop.cfg", doc.MpoAlteradosPelasMops.Replace('/', '-'));
-                        UILogUpdate($"{doc.MpoCodigo} está sendo alterado por {doc.MpoAlteradosPelasMops.Replace('/', '-')}");
-                    }
                 }
                 catch (Exception)
                 {
@@ -148,7 +147,7 @@ namespace SOS
                 UILogUpdate($"{mopFile.Name} atualizando");
                 if (mopFile.Exists)
                 {
-                    UILogUpdate($"{mopFile.Name} já está disponível em {mopFile.FullName}");
+                    UILogUpdate($"{mopFile.Name} já está disponível");
                     continue;
                 }
                 try
@@ -161,6 +160,8 @@ namespace SOS
                     UILogUpdate($"{mopFile.Name} não foi possível atualização pelo link {mopLink}");
                 }
             }
+            string json = JsonConvert.SerializeObject(docsMPO);
+            File.WriteAllText(jsonInfoFile.FullName, json);
             client.Dispose();
             UILogUpdate("#Término - Procedimentos da Operação (MPO)");
         }

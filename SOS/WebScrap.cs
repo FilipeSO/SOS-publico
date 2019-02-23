@@ -121,6 +121,13 @@ namespace SOS
                 jsonDiagramas = JsonConvert.DeserializeObject<ModelDiagramasONS>(resultContent);
                 diagramas.AddRange(jsonDiagramas.Row.ToList());
             }
+            //Regex formacaoIncorreta = new Regex("_(r|R)ev.[a-zA-Z]+"); //remover diagramas nomenclatura incorreta
+            //diagramas = diagramas.Where(w => !formacaoIncorreta.IsMatch(w.FileLeafRef)).ToList(); //remover diagramas nomenclatura incorreta
+
+            Regex formatacaoCorreta = new Regex("_(r|R)ev.[0-9]+.pdf"); //manter diagramas com formacão correta
+            diagramas = diagramas.Where(w => formatacaoCorreta.IsMatch(w.FileLeafRef)).ToList(); //manter diagramas com formacão correta
+
+
             return diagramas;
             //var cookies = handler.CookieContainer.GetCookies(new Uri("https://cdre.ons.org.br"));
 
