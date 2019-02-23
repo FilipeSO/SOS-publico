@@ -126,8 +126,7 @@ namespace SOS
 
             Regex formatacaoCorreta = new Regex("_(r|R)ev.[0-9]+.pdf"); //manter diagramas com formacão correta
             diagramas = diagramas.Where(w => formatacaoCorreta.IsMatch(w.FileLeafRef)).ToList(); //manter diagramas com formacão correta
-
-
+            
             return diagramas;
             //var cookies = handler.CookieContainer.GetCookies(new Uri("https://cdre.ons.org.br"));
 

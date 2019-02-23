@@ -14,12 +14,26 @@ using System.Windows.Forms;
 
 namespace SOS
 {
-    public partial class Form1 : Form
+    public partial class BrowserInterface : Form
     {
-        public Form1()
+        private const string DefaultUrlForAddedTabs = "https://www.google.com";
+        private bool multiThreadedMessageLoopEnabled;
+
+        public BrowserInterface(bool multiThreadedMessageLoopEnabled)
         {
             InitializeComponent();
-            this.Load += Form1_Load;
+
+            var bitness = Environment.Is64BitProcess ? "x64" : "x86";
+            Text = "SOS - " + bitness;
+            WindowState = FormWindowState.Maximized;
+
+            Load += Form1_Load;
+            //Only perform layout when control has completly finished resizing
+            ResizeBegin += (s, e) => SuspendLayout();
+            ResizeEnd += (s, e) => ResumeLayout(true);
+
+            this.multiThreadedMessageLoopEnabled = multiThreadedMessageLoopEnabled;
+
         }
         private string LogText = "";
 
@@ -43,15 +57,54 @@ namespace SOS
         private void Form1_Load(object sender, EventArgs e)
         {
 
+            FileInfo pdfFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/AO-AJ.SE.UHAT.pdf");
+            AddTab(pdfFile.FullName);
+
             Task.Run(() =>
             {
-                UpdateMPO();
-                FileLogUpdate();
+                //UpdateMPO();
+                //FileLogUpdate();
                 //UpdateDiagramasONS();
                 //FileLogUpdate();
 
             });
         }
+
+        private void AddTab(string url, int? insertIndex = null)
+        {
+            browserTabControl.SuspendLayout();
+
+            var browser = new BrowserTabUserControl(AddTab, url, multiThreadedMessageLoopEnabled)
+            {
+                Dock = DockStyle.Fill,
+            };
+
+            var tabPage = new TabPage(url)
+            {
+                Dock = DockStyle.Fill
+            };
+
+            //This call isn't required for the sample to work. 
+            //It's sole purpose is to demonstrate that #553 has been resolved.
+            browser.CreateControl();
+
+            tabPage.Controls.Add(browser);
+
+            if (insertIndex == null)
+            {
+                browserTabControl.TabPages.Add(tabPage);
+            }
+            else
+            {
+                browserTabControl.TabPages.Insert(insertIndex.Value, tabPage);
+            }
+
+            //Make newly created tab active
+            browserTabControl.SelectedTab = tabPage;
+
+            browserTabControl.ResumeLayout(true);
+        }
+
 
         private void UpdateDiagramasONS()
         {
