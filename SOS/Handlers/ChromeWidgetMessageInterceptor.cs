@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 
-namespace SOS
+namespace SOS.Handlers
 {
     /// <summary>
     /// Intercepts Windows messages sent to the ChromiumWebBrowser control's widget sub-window.

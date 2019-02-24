@@ -28,18 +28,20 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BrowserTabUserControl));
             this.toolStrip2 = new System.Windows.Forms.ToolStrip();
             this.findTextBox = new System.Windows.Forms.ToolStripTextBox();
             this.findPreviousButton = new System.Windows.Forms.ToolStripButton();
             this.findNextButton = new System.Windows.Forms.ToolStripButton();
             this.findCloseButton = new System.Windows.Forms.ToolStripButton();
+            this.findTextLabel = new System.Windows.Forms.ToolStripLabel();
             this.statusLabel = new System.Windows.Forms.Label();
             this.outputLabel = new System.Windows.Forms.Label();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.backButton = new System.Windows.Forms.ToolStripButton();
             this.forwardButton = new System.Windows.Forms.ToolStripButton();
-            this.urlTextBox = new System.Windows.Forms.ToolStripTextBox();
             this.goButton = new System.Windows.Forms.ToolStripButton();
+            this.urlTextBox = new System.Windows.Forms.ToolStripTextBox();
             this.browserPanel = new System.Windows.Forms.Panel();
             this.toolStrip2.SuspendLayout();
             this.toolStrip1.SuspendLayout();
@@ -51,6 +53,7 @@
             this.toolStrip2.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.toolStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.findTextBox,
+            this.findTextLabel,
             this.findPreviousButton,
             this.findNextButton,
             this.findCloseButton});
@@ -63,12 +66,14 @@
             // findTextBox
             // 
             this.findTextBox.Name = "findTextBox";
-            this.findTextBox.Size = new System.Drawing.Size(100, 25);
+            this.findTextBox.Size = new System.Drawing.Size(400, 25);
             this.findTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.FindTextBoxKeyDown);
             // 
             // findPreviousButton
             // 
+            this.findPreviousButton.AutoToolTip = false;
             this.findPreviousButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.findPreviousButton.Image = ((System.Drawing.Image)(resources.GetObject("findPreviousButton.Image")));
             this.findPreviousButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.findPreviousButton.Name = "findPreviousButton";
             this.findPreviousButton.Size = new System.Drawing.Size(23, 22);
@@ -77,7 +82,9 @@
             // 
             // findNextButton
             // 
+            this.findNextButton.AutoToolTip = false;
             this.findNextButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.findNextButton.Image = ((System.Drawing.Image)(resources.GetObject("findNextButton.Image")));
             this.findNextButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.findNextButton.Name = "findNextButton";
             this.findNextButton.Size = new System.Drawing.Size(23, 22);
@@ -87,6 +94,7 @@
             // findCloseButton
             // 
             this.findCloseButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.findCloseButton.AutoToolTip = false;
             this.findCloseButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.findCloseButton.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Bold);
             this.findCloseButton.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -94,6 +102,11 @@
             this.findCloseButton.Size = new System.Drawing.Size(23, 22);
             this.findCloseButton.Text = "X";
             this.findCloseButton.Click += new System.EventHandler(this.FindCloseButtonClick);
+            // 
+            // findTextLabel
+            // 
+            this.findTextLabel.Name = "findTextLabel";
+            this.findTextLabel.Size = new System.Drawing.Size(0, 22);
             // 
             // statusLabel
             // 
@@ -147,13 +160,6 @@
             this.forwardButton.Text = "Forward";
             this.forwardButton.Click += new System.EventHandler(this.ForwardButtonClick);
             // 
-            // urlTextBox
-            // 
-            this.urlTextBox.AutoSize = false;
-            this.urlTextBox.Name = "urlTextBox";
-            this.urlTextBox.Size = new System.Drawing.Size(500, 25);
-            this.urlTextBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.UrlTextBoxKeyUp);
-            // 
             // goButton
             // 
             this.goButton.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -161,6 +167,13 @@
             this.goButton.Size = new System.Drawing.Size(26, 22);
             this.goButton.Text = "Go";
             this.goButton.Click += new System.EventHandler(this.GoButtonClick);
+            // 
+            // urlTextBox
+            // 
+            this.urlTextBox.AutoSize = false;
+            this.urlTextBox.Name = "urlTextBox";
+            this.urlTextBox.Size = new System.Drawing.Size(500, 25);
+            this.urlTextBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.UrlTextBoxKeyUp);
             // 
             // browserPanel
             // 
@@ -198,11 +211,12 @@
 
         private System.Windows.Forms.ToolStrip toolStrip2;
         private System.Windows.Forms.ToolStripButton findPreviousButton;
-        private System.Windows.Forms.ToolStripTextBox findTextBox;
         private System.Windows.Forms.ToolStripButton findNextButton;
         private System.Windows.Forms.ToolStripButton findCloseButton;
         private System.Windows.Forms.Panel browserPanel;
         public System.Windows.Forms.Label statusLabel;
         private System.Windows.Forms.Label outputLabel;
+        public System.Windows.Forms.ToolStripLabel findTextLabel;
+        public System.Windows.Forms.ToolStripTextBox findTextBox;
     }
 }

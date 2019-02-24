@@ -4,7 +4,7 @@
 
 using CefSharp;
 using System;
-using SOS.Controls;
+using CefSharp.WinForms.Internals;
 
 namespace SOS.Handlers
 {

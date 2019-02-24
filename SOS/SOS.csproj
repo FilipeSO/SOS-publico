@@ -96,13 +96,13 @@
     <Compile Include="BrowserTabUserControl.Designer.cs">
       <DependentUpon>BrowserTabUserControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Handlers\ChromeWidgetMessageInterceptor.cs" />
     <Compile Include="Handlers\DisplayHandler.cs" />
     <Compile Include="Handlers\DownloadHandler.cs" />
+    <Compile Include="Handlers\FindHandler.cs" />
     <Compile Include="Handlers\KeyboardHandler.cs" />
     <Compile Include="Handlers\MenuHandler.cs" />
     <Compile Include="Handlers\RenderProcessMessageHandler.cs" />
-    <Compile Include="Controls\ChromeWidgetMessageInterceptor.cs" />
-    <Compile Include="Controls\ControlExtensions.cs" />
     <Compile Include="ModelDiagramasONS.cs" />
     <Compile Include="ModelMPO.cs" />
     <Compile Include="Program.cs" />
@@ -144,7 +144,12 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Resources\arrow_down.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\arrow_up.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

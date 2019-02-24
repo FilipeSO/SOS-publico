@@ -12,7 +12,7 @@ using CefSharp;
 using System.Runtime.InteropServices;
 using System.Threading;
 using SOS.Handlers;
-using SOS.Controls;
+using CefSharp.WinForms.Internals;
 
 namespace SOS
 {
@@ -76,6 +76,7 @@ namespace SOS
 
             browser.RenderProcessMessageHandler = new RenderProcessMessageHandler();
             browser.DisplayHandler = new DisplayHandler();
+            browser.FindHandler = new FindHandler(this);
             //browser.MouseDown += OnBrowserMouseClick;
             browser.HandleCreated += OnBrowserHandleCreated;
             //browser.ResourceHandlerFactory = new FlashResourceHandlerFactory();
@@ -380,12 +381,26 @@ namespace SOS
 
         private void FindNextButtonClick(object sender, EventArgs e)
         {
-            Find(true);
+            if (findTextLabel.Text.Split('/').First() == findTextLabel.Text.Split('/').Last())
+            {
+                Find(false);
+            }
+            else
+            {
+                Find(true);
+            }
         }
 
         private void FindPreviousButtonClick(object sender, EventArgs e)
         {
-            Find(false);
+            if (findTextLabel.Text.Split('/').First() == "1")
+            {
+                Find(true);
+            }
+            else
+            {
+                Find(false);
+            }
         }
 
         private void Find(bool next)
@@ -402,8 +417,14 @@ namespace SOS
             {
                 return;
             }
-
-            Find(true);
+            if(findTextLabel.Text.Split('/').First() == findTextLabel.Text.Split('/').Last())
+            {
+                Find(false);
+            }
+            else
+            {
+                Find(true);
+            }
         }
 
         public void ShowFind()

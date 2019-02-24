@@ -159,7 +159,7 @@ namespace SOS
 
         private void NewTabToolStripMenuItemClick(object sender, EventArgs e)
         {
-            AddTab(DefaultUrlForAddedTabs);
+            AddTab(DefaultUrlForAddedTabs);            
         }
 
         private void CloseTabToolStripMenuItemClick(object sender, EventArgs e)
