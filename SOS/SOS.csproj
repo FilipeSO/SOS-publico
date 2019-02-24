@@ -76,6 +76,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AboutBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AboutBox.Designer.cs">
+      <DependentUpon>AboutBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="BrowserInterface.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -90,9 +96,11 @@
     </Compile>
     <Compile Include="Handlers\DisplayHandler.cs" />
     <Compile Include="Handlers\DownloadHandler.cs" />
+    <Compile Include="Handlers\ExtensionHandler.cs" />
     <Compile Include="Handlers\KeyboardHandler.cs" />
     <Compile Include="Handlers\MenuHandler.cs" />
     <Compile Include="Handlers\RenderProcessMessageHandler.cs" />
+    <Compile Include="Handlers\RunFileDialogCallback.cs" />
     <Compile Include="Internals\ChromeWidgetMessageInterceptor.cs" />
     <Compile Include="Internals\ControlExtensions.cs" />
     <Compile Include="ModelDiagramasONS.cs" />
@@ -100,6 +108,9 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WebScrap.cs" />
+    <EmbeddedResource Include="AboutBox.resx">
+      <DependentUpon>AboutBox.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="BrowserInterface.resx">
       <DependentUpon>BrowserInterface.cs</DependentUpon>
     </EmbeddedResource>

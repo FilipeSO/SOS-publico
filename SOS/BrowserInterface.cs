@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using CefSharp;
+using CefSharp.WinForms;
+using Newtonsoft.Json;
+using SOS.Handlers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,6 +19,8 @@ namespace SOS
 {
     public partial class BrowserInterface : Form
     {
+        // Default to a small increment:
+        private const double ZoomIncrement = 0.10;
         private const string DefaultUrlForAddedTabs = "https://www.google.com";
         private bool multiThreadedMessageLoopEnabled;
 
@@ -27,7 +32,7 @@ namespace SOS
             Text = "SOS - " + bitness;
             WindowState = FormWindowState.Maximized;
 
-            Load += Form1_Load;
+            Load += BrowserInterface_Load;
             //Only perform layout when control has completly finished resizing
             ResizeBegin += (s, e) => SuspendLayout();
             ResizeEnd += (s, e) => ResumeLayout(true);
@@ -35,26 +40,8 @@ namespace SOS
             this.multiThreadedMessageLoopEnabled = multiThreadedMessageLoopEnabled;
 
         }
-        private string LogText = "";
 
-        private void UILogUpdate(string report)
-        {
-            LogText += $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: {report}{Environment.NewLine}";
-            report = report.Length > 100 ? $"{report.Substring(0, 100)}..." : report;
-            if (this.InvokeRequired)
-            {
-                this.Invoke((MethodInvoker)(() =>
-                {
-                    toolStripStatusLabel1.Text = $"Atualização de documentos: {report}";
-                }));
-            }
-        }
-        private void FileLogUpdate()
-        {
-            File.WriteAllText($"{Environment.CurrentDirectory}/Documentos/log.txt", LogText);
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
+        private void BrowserInterface_Load(object sender, EventArgs e)
         {
 
             FileInfo pdfFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/AO-AJ.SE.UHAT.pdf");
@@ -105,6 +92,436 @@ namespace SOS
             browserTabControl.ResumeLayout(true);
         }
 
+        private void ExitMenuItemClick(object sender, EventArgs e)
+        {
+            ExitApplication();
+        }
+
+        private void ExitApplication()
+        {
+            Close();
+        }
+
+        private void AboutToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            new AboutBox().ShowDialog();
+        }
+
+        public void RemoveTab(IntPtr windowHandle)
+        {
+            var parentControl = FromChildHandle(windowHandle);
+            if (!parentControl.IsDisposed)
+            {
+                if (parentControl.Parent is TabPage tabPage)
+                {
+                    browserTabControl.TabPages.Remove(tabPage);
+                }
+                else if (parentControl.Parent is Panel panel)
+                {
+                    var browserTabUserControl = (BrowserTabUserControl)panel.Parent;
+
+                    var tab = (TabPage)browserTabUserControl.Parent;
+                    browserTabControl.TabPages.Remove(tab);
+                }
+            }
+        }
+
+        private void FindMenuItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                control.ShowFind();
+            }
+        }
+
+        private void CopySourceToClipBoardAsyncClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                control.CopySourceToClipBoardAsync();
+            }
+        }
+
+        private BrowserTabUserControl GetCurrentTabControl()
+        {
+            if (browserTabControl.SelectedIndex == -1)
+            {
+                return null;
+            }
+
+            var tabPage = browserTabControl.Controls[browserTabControl.SelectedIndex];
+            var control = tabPage.Controls[0] as BrowserTabUserControl;
+
+            return control;
+        }
+
+        private void NewTabToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            AddTab(DefaultUrlForAddedTabs);
+        }
+
+        private void CloseTabToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            if (browserTabControl.TabPages.Count == 0)
+            {
+                return;
+            }
+
+            var currentIndex = browserTabControl.SelectedIndex;
+
+            var tabPage = browserTabControl.TabPages[currentIndex];
+
+            var control = GetCurrentTabControl();
+            if (control != null && !control.IsDisposed)
+            {
+                control.Dispose();
+            }
+
+            browserTabControl.TabPages.Remove(tabPage);
+
+            tabPage.Dispose();
+
+            browserTabControl.SelectedIndex = currentIndex - 1;
+
+            if (browserTabControl.TabPages.Count == 0)
+            {
+                ExitApplication();
+            }
+        }
+
+        private void UndoMenuItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                control.Browser.Undo();
+            }
+        }
+
+        private void RedoMenuItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                control.Browser.Redo();
+            }
+        }
+
+        private void CutMenuItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                control.Browser.Cut();
+            }
+        }
+
+        private void CopyMenuItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                control.Browser.Copy();
+            }
+        }
+
+        private void PasteMenuItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                control.Browser.Paste();
+            }
+        }
+
+        private void DeleteMenuItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                control.Browser.Delete();
+            }
+        }
+
+        private void SelectAllMenuItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                control.Browser.SelectAll();
+            }
+        }
+
+        private void PrintToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                control.Browser.Print();
+            }
+        }
+
+        private void ShowDevToolsMenuItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                control.Browser.ShowDevTools();
+
+                //EXPERIMENTAL Example below shows how to use a control to host DevTools
+                //(in this case it's added as a new TabPage)
+                // NOTE: Does not currently move/resize correctly
+                //var tabPage = new TabPage("DevTools")
+                //{
+                //    Dock = DockStyle.Fill
+                //};
+
+                //var panel = new Panel
+                //{
+                //    Dock = DockStyle.Fill
+                //};
+
+                ////We need to call CreateControl as we need the Handle later
+                //panel.CreateControl();
+
+                //tabPage.Controls.Add(panel);
+
+                //browserTabControl.TabPages.Add(tabPage);
+
+                ////Make newly created tab active
+                //browserTabControl.SelectedTab = tabPage;
+
+                ////Grab the client rect
+                //var rect = panel.ClientRectangle;
+                //var webBrowser = control.Browser;
+                //var browser = webBrowser.GetBrowser().GetHost();
+                //var windowInfo = new WindowInfo();
+                ////DevTools becomes a child of the panel, we use it's dimesions
+                //windowInfo.SetAsChild(panel.Handle, rect.Left, rect.Top, rect.Right, rect.Bottom);
+                ////Show DevTools in our panel 
+                //browser.ShowDevTools(windowInfo);
+            }
+        }
+
+        private void CloseDevToolsMenuItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                control.Browser.CloseDevTools();
+            }
+        }
+
+        private void ZoomInToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                var task = control.Browser.GetZoomLevelAsync();
+
+                task.ContinueWith(previous =>
+                {
+                    if (previous.Status == TaskStatus.RanToCompletion)
+                    {
+                        var currentLevel = previous.Result;
+                        control.Browser.SetZoomLevel(currentLevel + ZoomIncrement);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Unexpected failure of calling CEF->GetZoomLevelAsync", previous.Exception);
+                    }
+                }, TaskContinuationOptions.ExecuteSynchronously);
+            }
+        }
+
+        private void ZoomOutToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                var task = control.Browser.GetZoomLevelAsync();
+                task.ContinueWith(previous =>
+                {
+                    if (previous.Status == TaskStatus.RanToCompletion)
+                    {
+                        var currentLevel = previous.Result;
+                        control.Browser.SetZoomLevel(currentLevel - ZoomIncrement);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Unexpected failure of calling CEF->GetZoomLevelAsync", previous.Exception);
+                    }
+                }, TaskContinuationOptions.ExecuteSynchronously);
+            }
+        }
+
+        private void CurrentZoomLevelToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                var task = control.Browser.GetZoomLevelAsync();
+                task.ContinueWith(previous =>
+                {
+                    if (previous.Status == TaskStatus.RanToCompletion)
+                    {
+                        var currentLevel = previous.Result;
+                        MessageBox.Show("Current ZoomLevel: " + currentLevel.ToString());
+                    }
+                    else
+                    {
+                        MessageBox.Show("Unexpected failure of calling CEF->GetZoomLevelAsync: " + previous.Exception.ToString());
+                    }
+                }, TaskContinuationOptions.HideScheduler);
+            }
+        }
+
+        private void GoToDemoPageToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                control.Browser.Load("custom://cefsharp/ScriptedMethodsTest.html");
+            }
+        }
+
+        private async void PrintToPdfToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                var dialog = new SaveFileDialog
+                {
+                    DefaultExt = ".pdf",
+                    Filter = "Pdf documents (.pdf)|*.pdf"
+                };
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    var success = await control.Browser.PrintToPdfAsync(dialog.FileName, new PdfPrintSettings
+                    {
+                        MarginType = CefPdfPrintMarginType.Custom,
+                        MarginBottom = 10,
+                        MarginTop = 0,
+                        MarginLeft = 20,
+                        MarginRight = 10
+                    });
+
+                    if (success)
+                    {
+                        MessageBox.Show("Pdf was saved to " + dialog.FileName);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Unable to save Pdf, check you have write permissions to " + dialog.FileName);
+                    }
+
+                }
+
+            }
+        }
+
+        private void OpenDataUrlToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                const string html = "<html><head><title>Test</title></head><body><h1>Html Encoded in URL!</h1></body></html>";
+                control.Browser.LoadHtml(html, false);
+            }
+        }
+
+        private void OpenHttpBinOrgToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                control.Browser.Load("https://httpbin.org/");
+            }
+        }
+
+        private void RunFileDialogToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                control.Browser.GetBrowserHost().RunFileDialog(CefFileDialogMode.Open, "Open", null, new List<string> { "*.*" }, 0, new RunFileDialogCallback());
+            }
+        }
+
+        private void LoadExtensionsToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                //The sample extension only works for http(s) schemes
+                if (control.Browser.Address.StartsWith("http"))
+                {
+                    var requestContext = control.Browser.GetBrowserHost().RequestContext;
+
+                    var dir = Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\CefSharp.Example\Extensions");
+                    dir = Path.GetFullPath(dir);
+                    if (!Directory.Exists(dir))
+                    {
+                        throw new DirectoryNotFoundException("Unable to locate example extensions folder - " + dir);
+                    }
+
+                    var extensionHandler = new ExtensionHandler
+                    {
+                        LoadExtensionPopup = (url) =>
+                        {
+                            BeginInvoke(new Action(() =>
+                            {
+                                var extensionForm = new Form();
+
+                                var extensionBrowser = new ChromiumWebBrowser(url);
+                                //extensionBrowser.IsBrowserInitializedChanged += (s, args) =>
+                                //{
+                                //    extensionBrowser.ShowDevTools();
+                                //};
+
+                                extensionForm.Controls.Add(extensionBrowser);
+
+                                extensionForm.Show(this);
+                            }));
+                        },
+                        GetActiveBrowser = (extension, isIncognito) =>
+                        {
+                            //Return the active browser for which the extension will act upon
+                            return control.Browser.GetBrowser();
+                        }
+                    };
+
+                    requestContext.LoadExtensionsFromDirectory(dir, extensionHandler);
+                }
+                else
+                {
+                    MessageBox.Show("The sample extension only works with http(s) schemes, please load a different website and try again", "Unable to load Extension");
+                }
+            }
+        }
+        #region UPDATE
+
+        private string LogText = "";
+
+        private void UILogUpdate(string report)
+        {
+            LogText += $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: {report}{Environment.NewLine}";
+            report = report.Length > 100 ? $"{report.Substring(0, 100)}..." : report;
+            if (this.InvokeRequired)
+            {
+                this.Invoke((MethodInvoker)(() =>
+                {
+                    //toolStripStatusLabel1.Text = $"Atualização de documentos: {report}";
+                }));
+            }
+        }
+        private void FileLogUpdate()
+        {
+            File.WriteAllText($"{Environment.CurrentDirectory}/Documentos/log.txt", LogText);
+        }
 
         private void UpdateDiagramasONS()
         {
@@ -218,5 +635,6 @@ namespace SOS
             client.Dispose();
             UILogUpdate("#Término - Procedimentos da Operação (MPO)");
         }
+        #endregion UPDATE
     }
 }
