@@ -107,24 +107,24 @@ namespace SOS
             new AboutBox().ShowDialog();
         }
 
-        public void RemoveTab(IntPtr windowHandle)
-        {
-            var parentControl = FromChildHandle(windowHandle);
-            if (!parentControl.IsDisposed)
-            {
-                if (parentControl.Parent is TabPage tabPage)
-                {
-                    browserTabControl.TabPages.Remove(tabPage);
-                }
-                else if (parentControl.Parent is Panel panel)
-                {
-                    var browserTabUserControl = (BrowserTabUserControl)panel.Parent;
+        //public void RemoveTab(IntPtr windowHandle)
+        //{
+        //    var parentControl = FromChildHandle(windowHandle);
+        //    if (!parentControl.IsDisposed)
+        //    {
+        //        if (parentControl.Parent is TabPage tabPage)
+        //        {
+        //            browserTabControl.TabPages.Remove(tabPage);
+        //        }
+        //        else if (parentControl.Parent is Panel panel)
+        //        {
+        //            var browserTabUserControl = (BrowserTabUserControl)panel.Parent;
 
-                    var tab = (TabPage)browserTabUserControl.Parent;
-                    browserTabControl.TabPages.Remove(tab);
-                }
-            }
-        }
+        //            var tab = (TabPage)browserTabUserControl.Parent;
+        //            browserTabControl.TabPages.Remove(tab);
+        //        }
+        //    }
+        //}
 
         private void FindMenuItemClick(object sender, EventArgs e)
         {
@@ -144,7 +144,7 @@ namespace SOS
             }
         }
 
-        private BrowserTabUserControl GetCurrentTabControl()
+        public BrowserTabUserControl GetCurrentTabControl()
         {
             if (browserTabControl.SelectedIndex == -1)
             {
@@ -164,7 +164,7 @@ namespace SOS
 
         private void CloseTabToolStripMenuItemClick(object sender, EventArgs e)
         {
-            if (browserTabControl.TabPages.Count == 0)
+            if (browserTabControl.TabPages.Count == 1)
             {
                 return;
             }

@@ -12,6 +12,7 @@ using CefSharp;
 using System.Runtime.InteropServices;
 using System.Threading;
 using SOS.Handlers;
+using SOS.Controls;
 
 namespace SOS
 {
@@ -35,7 +36,7 @@ namespace SOS
 
             Browser = browser;
 
-            browser.MenuHandler = new MenuHandler();
+            browser.MenuHandler = new MenuHandler(this);
             //browser.RequestHandler = new WinFormsRequestHandler(openNewTab);
             //browser.JsDialogHandler = new JsDialogHandler();
             browser.DownloadHandler = new DownloadHandler();

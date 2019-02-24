@@ -61,7 +61,9 @@
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="System" />
+    <Reference Include="System">
+      <HintPath>..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6\System.dll</HintPath>
+    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Security" />
     <Reference Include="System.Web" />
@@ -96,13 +98,11 @@
     </Compile>
     <Compile Include="Handlers\DisplayHandler.cs" />
     <Compile Include="Handlers\DownloadHandler.cs" />
-    <Compile Include="Handlers\ExtensionHandler.cs" />
     <Compile Include="Handlers\KeyboardHandler.cs" />
     <Compile Include="Handlers\MenuHandler.cs" />
     <Compile Include="Handlers\RenderProcessMessageHandler.cs" />
-    <Compile Include="Handlers\RunFileDialogCallback.cs" />
-    <Compile Include="Internals\ChromeWidgetMessageInterceptor.cs" />
-    <Compile Include="Internals\ControlExtensions.cs" />
+    <Compile Include="Controls\ChromeWidgetMessageInterceptor.cs" />
+    <Compile Include="Controls\ControlExtensions.cs" />
     <Compile Include="ModelDiagramasONS.cs" />
     <Compile Include="ModelMPO.cs" />
     <Compile Include="Program.cs" />
@@ -110,12 +110,15 @@
     <Compile Include="WebScrap.cs" />
     <EmbeddedResource Include="AboutBox.resx">
       <DependentUpon>AboutBox.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="BrowserInterface.resx">
       <DependentUpon>BrowserInterface.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="BrowserTabUserControl.resx">
       <DependentUpon>BrowserTabUserControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

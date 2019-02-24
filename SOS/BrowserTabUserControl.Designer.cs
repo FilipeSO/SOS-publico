@@ -195,14 +195,14 @@
         private System.Windows.Forms.ToolStripButton forwardButton;
         private System.Windows.Forms.ToolStripTextBox urlTextBox;
         private System.Windows.Forms.ToolStripButton goButton;
-        private System.Windows.Forms.Label outputLabel;
 
         private System.Windows.Forms.ToolStrip toolStrip2;
         private System.Windows.Forms.ToolStripButton findPreviousButton;
         private System.Windows.Forms.ToolStripTextBox findTextBox;
         private System.Windows.Forms.ToolStripButton findNextButton;
         private System.Windows.Forms.ToolStripButton findCloseButton;
-        private System.Windows.Forms.Label statusLabel;
         private System.Windows.Forms.Panel browserPanel;
+        public System.Windows.Forms.Label statusLabel;
+        private System.Windows.Forms.Label outputLabel;
     }
 }
