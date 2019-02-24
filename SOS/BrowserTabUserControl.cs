@@ -53,12 +53,18 @@ namespace SOS
             }
             //browser.LifeSpanHandler = new LifeSpanHandler();
             browser.LoadingStateChanged += OnBrowserLoadingStateChanged;
-            browser.ConsoleMessage += OnBrowserConsoleMessage;
+           
             browser.TitleChanged += OnBrowserTitleChanged;
             browser.AddressChanged += OnBrowserAddressChanged;
             browser.StatusMessage += OnBrowserStatusMessage;
             browser.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
-            browser.LoadError += OnLoadError;
+
+            //displayOutput messages
+            outputLabel.Visible = false;
+            //var version = String.Format("Chromium: {0}, CEF: {1}, CefSharp: {2}", Cef.ChromiumVersion, Cef.CefVersion, Cef.CefSharpVersion);
+            //DisplayOutput(version);
+            //browser.ConsoleMessage += OnBrowserConsoleMessage;
+            //browser.LoadError += OnLoadError;
 
             //browser.JavascriptObjectRepository.Register("bound", new BoundObject(), isAsync: false, options: BindingOptions.DefaultBinder);
             //browser.JavascriptObjectRepository.Register("boundAsync", new AsyncBoundObject(), isAsync: true, options: BindingOptions.DefaultBinder);
@@ -88,10 +94,7 @@ namespace SOS
             //// .Net methods starting with a capitol will be translated to starting with a lower case letter when called from js
             //browser.JavascriptObjectRepository.Register("boundEvent", eventObject, isAsync: false, options: BindingOptions.DefaultBinder);
 
-            //CefExample.RegisterTestResources(browser);
-
-            var version = String.Format("Chromium: {0}, CEF: {1}, CefSharp: {2}", Cef.ChromiumVersion, Cef.CefVersion, Cef.CefSharpVersion);
-            DisplayOutput(version);
+            //CefExample.RegisterTestResources(browser);    
         }
         
         /// <summary>
@@ -192,11 +195,11 @@ namespace SOS
         private void SetIsLoading(bool isLoading)
         {
             goButton.Text = isLoading ?
-                "Stop" :
-                "Go";
-            //goButton.Image = isLoading ?
-            //    Properties.Resources.nav_plain_red :
-            //    Properties.Resources.nav_plain_green;
+                "Parar" :
+                "Ir";
+            goButton.Image = isLoading ?
+                Properties.Resources.times_circle_regular :
+                Properties.Resources.redo_alt_solid;
 
             HandleToolStripLayout();
         }
@@ -357,13 +360,13 @@ namespace SOS
             }
         }
 
-        public async void CopySourceToClipBoardAsync()
-        {
-            var htmlSource = await Browser.GetSourceAsync();
+        //public async void CopySourceToClipBoardAsync()
+        //{
+        //    var htmlSource = await Browser.GetSourceAsync();
 
-            Clipboard.SetText(htmlSource);
-            DisplayOutput("HTML Source copied to clipboard");
-        }
+        //    Clipboard.SetText(htmlSource);
+        //    DisplayOutput("HTML Source copied to clipboard");
+        //}
 
         private void ToggleBottomToolStrip()
         {
@@ -430,6 +433,18 @@ namespace SOS
         public void ShowFind()
         {
             ToggleBottomToolStrip();
+        }
+        
+        public void DisplayOutputMessages()
+        {
+            if (outputLabel.Visible)
+            {
+                outputLabel.Visible = false;
+            }
+            else
+            {
+                outputLabel.Visible = true;
+            }
         }
 
         private void FindCloseButtonClick(object sender, EventArgs e)

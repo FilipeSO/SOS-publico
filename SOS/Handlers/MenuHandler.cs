@@ -17,12 +17,19 @@ namespace SOS.Handlers
             currentBrowserTab = form;
         }
         private string statusLabelLink = "";
-
+        private string selectionTextQuery = "";
         private const int ShowDevTools = 26501;
         private const int OpenNewTab = 26502;
+        private const int SearchGoogle = 26503;
 
         void IContextMenuHandler.OnBeforeContextMenu(IWebBrowser browserControl, IBrowser browser, IFrame frame, IContextMenuParams parameters, IMenuModel model)
         {
+            if (!string.IsNullOrWhiteSpace(parameters.SelectionText))
+            {
+                selectionTextQuery = parameters.SelectionText;
+                model.AddItem((CefMenuCommand)SearchGoogle, $"Pesquisar \"{selectionTextQuery.Substring(0, Math.Min(selectionTextQuery.Length, 60))}\" no Google");
+                
+            }
             statusLabelLink = currentBrowserTab.statusLabel.Text;
             if (Uri.IsWellFormedUriString(statusLabelLink, UriKind.RelativeOrAbsolute) && !string.IsNullOrWhiteSpace(statusLabelLink))
             {
@@ -65,6 +72,11 @@ namespace SOS.Handlers
             {
                 BrowserInterface browserInterface = currentBrowserTab.ParentForm as BrowserInterface;
                 browserInterface.InvokeOnUiThreadIfRequired(()=> browserInterface.AddTab(statusLabelLink));
+            }
+            if ((int)commandId == SearchGoogle)
+            {
+                BrowserInterface browserInterface = currentBrowserTab.ParentForm as BrowserInterface;
+                browserInterface.InvokeOnUiThreadIfRequired(() => browserInterface.AddTab($"https://www.google.com/search?q={selectionTextQuery}"));
             }
 
             return false;

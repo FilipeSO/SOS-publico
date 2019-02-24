@@ -106,7 +106,6 @@ namespace SOS
         {
             new AboutBox().ShowDialog();
         }
-
         //public void RemoveTab(IntPtr windowHandle)
         //{
         //    var parentControl = FromChildHandle(windowHandle);
@@ -125,6 +124,14 @@ namespace SOS
         //        }
         //    }
         //}
+        private void DisplayOutputMessagesItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                control.DisplayOutputMessages();
+            }
+        }
 
         private void FindMenuItemClick(object sender, EventArgs e)
         {
@@ -135,14 +142,14 @@ namespace SOS
             }
         }
 
-        private void CopySourceToClipBoardAsyncClick(object sender, EventArgs e)
-        {
-            var control = GetCurrentTabControl();
-            if (control != null)
-            {
-                control.CopySourceToClipBoardAsync();
-            }
-        }
+        //private void CopySourceToClipBoardAsyncClick(object sender, EventArgs e)
+        //{
+        //    var control = GetCurrentTabControl();
+        //    if (control != null)
+        //    {
+        //        control.CopySourceToClipBoardAsync();
+        //    }
+        //}
 
         private BrowserTabUserControl GetCurrentTabControl()
         {
@@ -305,14 +312,14 @@ namespace SOS
             }
         }
 
-        private void CloseDevToolsMenuItemClick(object sender, EventArgs e)
-        {
-            var control = GetCurrentTabControl();
-            if (control != null)
-            {
-                control.Browser.CloseDevTools();
-            }
-        }
+        //private void CloseDevToolsMenuItemClick(object sender, EventArgs e)
+        //{
+        //    var control = GetCurrentTabControl();
+        //    if (control != null)
+        //    {
+        //        control.Browser.CloseDevTools();
+        //    }
+        //}
 
         private void ZoomInToolStripMenuItemClick(object sender, EventArgs e)
         {
@@ -357,26 +364,26 @@ namespace SOS
             }
         }
 
-        private void CurrentZoomLevelToolStripMenuItemClick(object sender, EventArgs e)
-        {
-            var control = GetCurrentTabControl();
-            if (control != null)
-            {
-                var task = control.Browser.GetZoomLevelAsync();
-                task.ContinueWith(previous =>
-                {
-                    if (previous.Status == TaskStatus.RanToCompletion)
-                    {
-                        var currentLevel = previous.Result;
-                        MessageBox.Show("Current ZoomLevel: " + currentLevel.ToString());
-                    }
-                    else
-                    {
-                        MessageBox.Show("Unexpected failure of calling CEF->GetZoomLevelAsync: " + previous.Exception.ToString());
-                    }
-                }, TaskContinuationOptions.HideScheduler);
-            }
-        }
+        //private void CurrentZoomLevelToolStripMenuItemClick(object sender, EventArgs e)
+        //{
+        //    var control = GetCurrentTabControl();
+        //    if (control != null)
+        //    {
+        //        var task = control.Browser.GetZoomLevelAsync();
+        //        task.ContinueWith(previous =>
+        //        {
+        //            if (previous.Status == TaskStatus.RanToCompletion)
+        //            {
+        //                var currentLevel = previous.Result;
+        //                MessageBox.Show("Current ZoomLevel: " + currentLevel.ToString());
+        //            }
+        //            else
+        //            {
+        //                MessageBox.Show("Unexpected failure of calling CEF->GetZoomLevelAsync: " + previous.Exception.ToString());
+        //            }
+        //        }, TaskContinuationOptions.HideScheduler);
+        //    }
+        //}
 
         private async void PrintToPdfToolStripMenuItemClick(object sender, EventArgs e)
         {
@@ -402,11 +409,11 @@ namespace SOS
 
                     if (success)
                     {
-                        MessageBox.Show("Pdf was saved to " + dialog.FileName);
+                        MessageBox.Show("PDF salvo em " + dialog.FileName);
                     }
                     else
                     {
-                        MessageBox.Show("Unable to save Pdf, check you have write permissions to " + dialog.FileName);
+                        MessageBox.Show("Não foi possível salvar o PDF, cheque se você tem permissão de escrita para " + dialog.FileName);
                     }
 
                 }

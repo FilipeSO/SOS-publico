@@ -96,6 +96,7 @@
     <Compile Include="BrowserTabUserControl.Designer.cs">
       <DependentUpon>BrowserTabUserControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="DependencyChecker.cs" />
     <Compile Include="Handlers\ChromeWidgetMessageInterceptor.cs" />
     <Compile Include="Handlers\DisplayHandler.cs" />
     <Compile Include="Handlers\DownloadHandler.cs" />
@@ -143,6 +144,27 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\arrow-left-solid.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\arrow-right-solid.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\redo-alt-solid.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\times-solid.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\times-circle-regular.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\sort-down-solid.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\sort-up-solid.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\arrow_down.png" />
