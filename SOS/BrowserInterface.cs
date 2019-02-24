@@ -57,7 +57,7 @@ namespace SOS
             });
         }
 
-        private void AddTab(string url, int? insertIndex = null)
+        public void AddTab(string url, int? insertIndex = null)
         {
             browserTabControl.SuspendLayout();
 
@@ -144,7 +144,7 @@ namespace SOS
             }
         }
 
-        public BrowserTabUserControl GetCurrentTabControl()
+        private BrowserTabUserControl GetCurrentTabControl()
         {
             if (browserTabControl.SelectedIndex == -1)
             {

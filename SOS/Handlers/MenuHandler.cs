@@ -10,33 +10,48 @@ namespace SOS.Handlers
 {
     internal class MenuHandler : IContextMenuHandler
     {
-        private static BrowserTabUserControl _instanceForm = null;
+        private BrowserTabUserControl currentBrowserTab = null;
 
         public MenuHandler(BrowserTabUserControl form)
         {
-            _instanceForm = form;
+            currentBrowserTab = form;
         }
-        
-        private const int ShowDevTools = 26501;
-        private const int CloseDevTools = 26502;
-        private const int OpenNewTab = 26503;
+        private string statusLabelLink = "";
 
+        private const int ShowDevTools = 26501;
+        private const int OpenNewTab = 26502;
 
         void IContextMenuHandler.OnBeforeContextMenu(IWebBrowser browserControl, IBrowser browser, IFrame frame, IContextMenuParams parameters, IMenuModel model)
         {
-            //To disable the menu then call clear
-            //model.Clear();
+            statusLabelLink = currentBrowserTab.statusLabel.Text;
+            if (Uri.IsWellFormedUriString(statusLabelLink, UriKind.RelativeOrAbsolute) && !string.IsNullOrWhiteSpace(statusLabelLink))
+            {
+                model.Clear();
+                model.AddItem((CefMenuCommand)OpenNewTab, "Abrir link em nova guia");
+            }
+            else
+            {
+                //model.SetLabel(CefMenuCommand.Redo, "Refazer");
+                //model.SetLabel(CefMenuCommand.Undo, "Desfazer");
 
-            //Removing existing menu item
-            //bool removed = model.Remove(CefMenuCommand.ViewSource); // Remove "View Source" option
-            //model.SetLabel(CefMenuCommand.ViewSource, "AAAAA");
-            //Add new custom menu items
-            //model.AddItem((CefMenuCommand)ShowDevTools, "Show DevTools");
-            model.AddItem((CefMenuCommand)OpenNewTab, "Abrir link em nova guia");
-            model.AddSeparator(); //conta no indexx
-            model.AddItem((CefMenuCommand)CloseDevTools, "Close DevTools");
-            string text = _instanceForm.statusLabel.Text;
-            model.SetEnabledAt(0, Uri.IsWellFormedUriString(_instanceForm.statusLabel.Text, UriKind.RelativeOrAbsolute) && !string.IsNullOrWhiteSpace(text));
+                model.Remove(CefMenuCommand.Redo);
+                model.Remove(CefMenuCommand.Undo);
+
+                model.SetLabel(CefMenuCommand.Forward, "Avançar");
+                model.SetLabel(CefMenuCommand.Back, "Voltar");
+                model.SetLabel(CefMenuCommand.Copy, "Copiar");
+                //model.SetLabel(CefMenuCommand.AddToDictionary, "Adicionar ao dicionário");
+                model.SetLabel(CefMenuCommand.Cut, "Cortar");
+                model.SetLabel(CefMenuCommand.Delete, "Apagar");
+                model.SetLabel(CefMenuCommand.Paste, "Colar");
+                model.SetLabel(CefMenuCommand.SelectAll, "Selecionar tudo");
+                model.SetLabel(CefMenuCommand.Print, "Imprimir");
+                model.SetLabel(CefMenuCommand.Reload, "Recarregar");
+                model.SetLabel(CefMenuCommand.ReloadNoCache, "Voltar");
+                model.SetLabel(CefMenuCommand.ViewSource, "Exibir código fonte da página");
+                model.AddSeparator(); //indexado 
+                model.AddItem((CefMenuCommand)ShowDevTools, "Inspecionar");
+            }
         }
 
         bool IContextMenuHandler.OnContextMenuCommand(IWebBrowser browserControl, IBrowser browser, IFrame frame, IContextMenuParams parameters, CefMenuCommand commandId, CefEventFlags eventFlags)
@@ -45,10 +60,13 @@ namespace SOS.Handlers
             {
                 browser.ShowDevTools();
             }
-            if ((int)commandId == CloseDevTools)
+
+            if ((int)commandId == OpenNewTab)
             {
-                browser.CloseDevTools();
+                BrowserInterface browserInterface = currentBrowserTab.ParentForm as BrowserInterface;
+                browserInterface.InvokeOnUiThreadIfRequired(()=> browserInterface.AddTab(statusLabelLink));
             }
+
             return false;
         }
 

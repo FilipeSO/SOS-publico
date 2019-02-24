@@ -22,6 +22,7 @@ namespace SOS
         private IntPtr browserHandle;
         private ChromeWidgetMessageInterceptor messageInterceptor;
         private bool multiThreadedMessageLoopEnabled;
+        private int tabTitleMaxStringLenght = 20;
 
         public BrowserTabUserControl(Action<string, int?> openNewTab, string url, bool multiThreadedMessageLoopEnabled)
         {
@@ -91,8 +92,7 @@ namespace SOS
             var version = String.Format("Chromium: {0}, CEF: {1}, CefSharp: {2}", Cef.ChromiumVersion, Cef.CefVersion, Cef.CefSharpVersion);
             DisplayOutput(version);
         }
-
-
+        
         /// <summary>
         /// Clean up any resources being used.
         /// </summary>
@@ -116,14 +116,33 @@ namespace SOS
             base.Dispose(disposing);
         }
 
+        //private static void OnJavascriptEventArrived(string eventName, object eventData)
+        //{
+        //    switch (eventName)
+        //    {
+        //        case "click":
+        //            {
+        //                var message = eventData.ToString();
+        //                var dataDictionary = eventData as Dictionary<string, object>;
+        //                if (dataDictionary != null)
+        //                {
+        //                    var result = string.Join(", ", dataDictionary.Select(pair => pair.Key + "=" + pair.Value));
+        //                    message = "event data: " + result;
+        //                }
+        //                MessageBox.Show(message, "Javascript event arrived", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        //                break;
+        //            }
+        //    }
+        //}
+
+        //private void OnBrowserMouseClick(object sender, MouseEventArgs e)
+        //{
+        //    MessageBox.Show("Mouse Clicked" + e.X + ";" + e.Y + ";" + e.Button);
+        //}
+
         private void OnBrowserHandleCreated(object sender, EventArgs e)
         {
             browserHandle = ((ChromiumWebBrowser)Browser).Handle;
-        }
-
-        private void OnBrowserMouseClick(object sender, MouseEventArgs e)
-        {
-            MessageBox.Show("Mouse Clicked" + e.X + ";" + e.Y + ";" + e.Button);
         }
 
         private void OnLoadError(object sender, LoadErrorEventArgs args)
@@ -151,31 +170,12 @@ namespace SOS
 
         private void OnBrowserTitleChanged(object sender, TitleChangedEventArgs args)
         {
-            this.InvokeOnUiThreadIfRequired(() => Parent.Text = args.Title);
+            this.InvokeOnUiThreadIfRequired(() => Parent.Text = args.Title.Substring(0, Math.Min(args.Title.Length, tabTitleMaxStringLenght)));
         }
 
         private void OnBrowserAddressChanged(object sender, AddressChangedEventArgs args)
         {
             this.InvokeOnUiThreadIfRequired(() => urlTextBox.Text = args.Address);
-        }
-
-        private static void OnJavascriptEventArrived(string eventName, object eventData)
-        {
-            switch (eventName)
-            {
-                case "click":
-                    {
-                        var message = eventData.ToString();
-                        var dataDictionary = eventData as Dictionary<string, object>;
-                        if (dataDictionary != null)
-                        {
-                            var result = string.Join(", ", dataDictionary.Select(pair => pair.Key + "=" + pair.Value));
-                            message = "event data: " + result;
-                        }
-                        MessageBox.Show(message, "Javascript event arrived", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        break;
-                    }
-            }
         }
 
         private void SetCanGoBack(bool canGoBack)
@@ -298,11 +298,7 @@ namespace SOS
                 }
             }
         }
-
-
-
-
-
+        
         //form controls
         private void DisplayOutput(string output)
         {
