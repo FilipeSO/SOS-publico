@@ -16,6 +16,8 @@ namespace SOS
         [STAThread]
         static void Main()
         {
+            Application.SetCompatibleTextRenderingDefault(false);
+
             Cef.EnableHighDPISupport();
 
             const bool multiThreadedMessageLoop = true;
@@ -35,12 +37,14 @@ namespace SOS
             //    browserProcessHandler = new WinFormsBrowserProcessHandler(scheduler);
             //}
 
-            var settings = new CefSettings();
-            settings.MultiThreadedMessageLoop = multiThreadedMessageLoop;
-            settings.ExternalMessagePump = !multiThreadedMessageLoop;
+            var settings = new CefSettings
+            {
+                MultiThreadedMessageLoop = multiThreadedMessageLoop,
+                ExternalMessagePump = !multiThreadedMessageLoop
+            };
 
 
-            //Application.EnableVisualStyles();
+            Application.EnableVisualStyles();
             //Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(browser);
         }
