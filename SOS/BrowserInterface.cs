@@ -37,14 +37,11 @@ namespace SOS
             ResizeBegin += (s, e) => SuspendLayout();
             ResizeEnd += (s, e) => ResumeLayout(true);
 
-            this.multiThreadedMessageLoopEnabled = multiThreadedMessageLoopEnabled;
-            
-            browserTabControl.TabPages.Add(new TabPage { ToolTipText = "Nova guia"});
+            this.multiThreadedMessageLoopEnabled = multiThreadedMessageLoopEnabled;            
         }
 
         private void BrowserInterface_Load(object sender, EventArgs e)
         {
-
             FileInfo pdfFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/AO-AJ.SE.UHAT.pdf");
             AddTab(pdfFile.FullName);
 
@@ -57,7 +54,7 @@ namespace SOS
 
             });
         }
-
+        #region BrowserTabControl methods
         private void BrowserTabDrawItem(object sender, DrawItemEventArgs e)
         {
             browserTabControl.SuspendLayout();
@@ -84,7 +81,7 @@ namespace SOS
             {
                 return;
             }
-            browserTabControl.ResumeLayout();
+            browserTabControl.ResumeLayout(true);
         }
 
         private void BrowserTabMouseClick(object sender, MouseEventArgs e)
@@ -152,6 +149,8 @@ namespace SOS
 
             browserTabControl.ResumeLayout(true);
         }
+        #endregion 
+
 
         private void ExitMenuItemClick(object sender, EventArgs e)
         {

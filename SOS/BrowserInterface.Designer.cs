@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BrowserInterface));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newTabToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -52,7 +53,9 @@
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.browserTabControl = new System.Windows.Forms.TabControl();
+            this.btnNewTab = new System.Windows.Forms.TabPage();
             this.menuStrip1.SuspendLayout();
+            this.browserTabControl.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -143,39 +146,41 @@
             // 
             this.findMenuItem.Name = "findMenuItem";
             this.findMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F)));
-            this.findMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.findMenuItem.Size = new System.Drawing.Size(180, 22);
             this.findMenuItem.Text = "Procurar";
             this.findMenuItem.Click += new System.EventHandler(this.FindMenuItemClick);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(156, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
             // 
             // zoomToolStripMenuItem
             // 
             this.zoomToolStripMenuItem.Name = "zoomToolStripMenuItem";
-            this.zoomToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.zoomToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.Z)));
+            this.zoomToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.zoomToolStripMenuItem.Text = "Zoom +";
             this.zoomToolStripMenuItem.Click += new System.EventHandler(this.ZoomInToolStripMenuItemClick);
             // 
             // zoomToolStripMenuItem1
             // 
             this.zoomToolStripMenuItem1.Name = "zoomToolStripMenuItem1";
-            this.zoomToolStripMenuItem1.Size = new System.Drawing.Size(159, 22);
+            this.zoomToolStripMenuItem1.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.X)));
+            this.zoomToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
             this.zoomToolStripMenuItem1.Text = "Zoom -";
             this.zoomToolStripMenuItem1.Click += new System.EventHandler(this.ZoomOutToolStripMenuItemClick);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(156, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
             // 
             // undoMenuItem
             // 
             this.undoMenuItem.Name = "undoMenuItem";
             this.undoMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
-            this.undoMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.undoMenuItem.Size = new System.Drawing.Size(180, 22);
             this.undoMenuItem.Text = "Desfazer";
             this.undoMenuItem.Click += new System.EventHandler(this.UndoMenuItemClick);
             // 
@@ -183,19 +188,19 @@
             // 
             this.redoMenuItem.Name = "redoMenuItem";
             this.redoMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Y)));
-            this.redoMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.redoMenuItem.Size = new System.Drawing.Size(180, 22);
             this.redoMenuItem.Text = "Refazer";
             this.redoMenuItem.Click += new System.EventHandler(this.RedoMenuItemClick);
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(156, 6);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(177, 6);
             // 
             // selectAllMenuItem
             // 
             this.selectAllMenuItem.Name = "selectAllMenuItem";
-            this.selectAllMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.selectAllMenuItem.Size = new System.Drawing.Size(180, 22);
             this.selectAllMenuItem.Text = "Selecionar tudo";
             this.selectAllMenuItem.Click += new System.EventHandler(this.SelectAllMenuItemClick);
             // 
@@ -238,6 +243,7 @@
             // 
             // browserTabControl
             // 
+            this.browserTabControl.Controls.Add(this.btnNewTab);
             this.browserTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.browserTabControl.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed;
             this.browserTabControl.Location = new System.Drawing.Point(0, 24);
@@ -250,6 +256,16 @@
             this.browserTabControl.SelectedIndexChanged += new System.EventHandler(this.BrowserTabSelectedIndexChanged);
             this.browserTabControl.MouseClick += new System.Windows.Forms.MouseEventHandler(this.BrowserTabMouseClick);
             // 
+            // btnNewTab
+            // 
+            this.btnNewTab.Location = new System.Drawing.Point(4, 22);
+            this.btnNewTab.Name = "btnNewTab";
+            this.btnNewTab.Padding = new System.Windows.Forms.Padding(3);
+            this.btnNewTab.Size = new System.Drawing.Size(722, 440);
+            this.btnNewTab.TabIndex = 0;
+            this.btnNewTab.ToolTipText = "Nova guia";
+            this.btnNewTab.UseVisualStyleBackColor = true;
+            // 
             // BrowserInterface
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -257,11 +273,13 @@
             this.ClientSize = new System.Drawing.Size(730, 490);
             this.Controls.Add(this.browserTabControl);
             this.Controls.Add(this.menuStrip1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "BrowserInterface";
             this.Text = "BrowserForm";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.browserTabControl.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -291,6 +309,7 @@
         private System.Windows.Forms.ToolStripMenuItem zoomToolStripMenuItem1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripMenuItem exibirFerramentasToolStripMenuItem;
+        private System.Windows.Forms.TabPage btnNewTab;
     }
 }
 

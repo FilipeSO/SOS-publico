@@ -175,6 +175,12 @@
   <ItemGroup>
     <None Include="Resources\plus-solid.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Dangerous Creatures Recycle Empty.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Dangerous Creatures Recycle Full.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

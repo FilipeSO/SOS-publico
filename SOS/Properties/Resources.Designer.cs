@@ -101,6 +101,26 @@ namespace SOS.Properties {
         }
         
         /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Icon semelhante a (Ícone).
+        /// </summary>
+        internal static System.Drawing.Icon Dangerous_Creatures_Recycle_Empty {
+            get {
+                object obj = ResourceManager.GetObject("Dangerous_Creatures_Recycle_Empty", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Icon semelhante a (Ícone).
+        /// </summary>
+        internal static System.Drawing.Icon Dangerous_Creatures_Recycle_Full {
+            get {
+                object obj = ResourceManager.GetObject("Dangerous_Creatures_Recycle_Full", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap plus_solid {

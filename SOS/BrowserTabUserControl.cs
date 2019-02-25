@@ -39,7 +39,8 @@ namespace SOS
             browser.MenuHandler = new MenuHandler(this);
             //browser.RequestHandler = new WinFormsRequestHandler(openNewTab);
             //browser.JsDialogHandler = new JsDialogHandler();
-            browser.DownloadHandler = new DownloadHandler();
+            browser.DownloadHandler = new DownloadHandler(this);
+            
             if (multiThreadedMessageLoopEnabled)
             {
                 browser.KeyboardHandler = new KeyboardHandler();
@@ -328,6 +329,11 @@ namespace SOS
                 }
             }
             urlTextBox.Width = Math.Max(0, width - urlTextBox.Margin.Horizontal - 18);
+        }
+        private void DownloadLinkLabelClick(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            downloadOutputLabel.LinkVisited = true;
+            System.Diagnostics.Process.Start(e.Link.LinkData.ToString());
         }
 
         private void GoButtonClick(object sender, EventArgs e)
