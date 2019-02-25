@@ -44,17 +44,28 @@ namespace SOS
         {
             FileInfo pdfFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/AO-AJ.SE.UHAT.pdf");
             AddTab(pdfFile.FullName);
-
+            WebScrap webScrap = new WebScrap(statusOutputLinkLabel);
             Task.Run(() =>
             {
-                //UpdateMPO();
-                //FileLogUpdate();
-                //UpdateDiagramasONS();
-                //FileLogUpdate();
-
+                //webScrap.UpdateMPO();
+                webScrap.UpdateDiagramasONS();
+                webScrap.PushLogUpdate();
             });
         }
         #region BrowserTabControl methods
+        private BrowserTabUserControl GetCurrentTabControl()
+        {
+            if (browserTabControl.SelectedIndex == -1)
+            {
+                return null;
+            }
+
+            var tabPage = browserTabControl.Controls[browserTabControl.SelectedIndex];
+            var control = tabPage.Controls[0] as BrowserTabUserControl;
+
+            return control;
+        }
+
         private void BrowserTabDrawItem(object sender, DrawItemEventArgs e)
         {
             browserTabControl.SuspendLayout();
@@ -149,9 +160,9 @@ namespace SOS
 
             browserTabControl.ResumeLayout(true);
         }
-        #endregion 
+        #endregion
 
-
+        #region MenuStrip click methods
         private void ExitMenuItemClick(object sender, EventArgs e)
         {
             ExitApplication();
@@ -210,20 +221,7 @@ namespace SOS
         //        control.CopySourceToClipBoardAsync();
         //    }
         //}
-
-        private BrowserTabUserControl GetCurrentTabControl()
-        {
-            if (browserTabControl.SelectedIndex == -1)
-            {
-                return null;
-            }
-
-            var tabPage = browserTabControl.Controls[browserTabControl.SelectedIndex];
-            var control = tabPage.Controls[0] as BrowserTabUserControl;
-
-            return control;
-        }
-
+        
         private void NewTabToolStripMenuItemClick(object sender, EventArgs e)
         {
             AddTab(DefaultUrlForAddedTabs);            
@@ -485,140 +483,6 @@ namespace SOS
 
             }
         }
-
-        #region UPDATE
-
-        private string LogText = "";
-
-        private void UILogUpdate(string report)
-        {
-            LogText += $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: {report}{Environment.NewLine}";
-            report = report.Length > 100 ? $"{report.Substring(0, 100)}..." : report;
-            if (this.InvokeRequired)
-            {
-                this.Invoke((MethodInvoker)(() =>
-                {
-                    //toolStripStatusLabel1.Text = $"Atualização de documentos: {report}";
-                }));
-            }
-        }
-        private void FileLogUpdate()
-        {
-            File.WriteAllText($"{Environment.CurrentDirectory}/Documentos/log.txt", LogText);
-        }
-
-        private void UpdateDiagramasONS()
-        {
-            UILogUpdate("#Início - Diagramas ONS");
-            UILogUpdate("cdre.org.br/ conectando...");
-            List<Row> diagramasONS = WebScrap.ScrapOnsDiagramasAsync("fsaolive", "123123aA").GetAwaiter().GetResult();
-
-            FileInfo jsonInfoFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/Diagramas/info.json");
-            if (!jsonInfoFile.Directory.Exists) Directory.CreateDirectory(jsonInfoFile.Directory.FullName);
-
-            string jsonInfo = File.Exists(jsonInfoFile.FullName) ? File.ReadAllText(jsonInfoFile.FullName) : null; 
-            List<Row> localDiagramas = string.IsNullOrEmpty(jsonInfo) ? new List<Row>() : JsonConvert.DeserializeObject<List<Row>>(jsonInfo);
-
-            var client = new WebScrap.CookieAwareWebClient();
-
-            foreach (var diagrama in diagramasONS)
-            {
-                UILogUpdate($"{diagrama.FileLeafRef} atualizando");
-                string diagramaLink = $"https://cdre.ons.org.br{diagrama.FileRef}";
-
-                FileInfo diagramaFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/Diagramas/{diagrama.FileLeafRef.Split('_').First()}.pdf");
-                
-                string revisao = localDiagramas.Where(w=>w.FileLeafRef.Split('_').First() == diagrama.FileLeafRef.Split('_').First()).Select(s=>s.Modified).FirstOrDefault();
-                if (revisao == diagrama.Modified)
-                {
-                    UILogUpdate($"{diagrama.FileLeafRef} já se encontra na revisão vigente");
-                    continue;
-                }
-                try
-                {
-                    client.DownloadFile(diagramaLink, diagramaFile.FullName);
-                    UILogUpdate($"{diagrama.FileLeafRef.Split('_').First()} atualizado da modificação {revisao} para modificação {diagrama.Modified} em {diagramaFile.FullName}");
-                }
-                catch (Exception)
-                {
-                    UILogUpdate($"{diagrama.FileLeafRef.Split('_').First()} não foi possível atualização pelo link {diagramaLink}");
-                }
-            }
-            string json = JsonConvert.SerializeObject(diagramasONS);
-            File.WriteAllText(jsonInfoFile.FullName, json);
-            client.Dispose();
-            UILogUpdate("#Término - Diagramas ONS");
-        }
-
-        private void UpdateMPO()
-        {
-            UILogUpdate("#Início - Procedimentos da Operação (MPO)");
-            UILogUpdate("ons.org.br/ conectando...");
-            List<ChildItem> docsMPO = WebScrap.ScrapMPOAsync("FURNAS").GetAwaiter().GetResult();
-            FileInfo jsonInfoFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/info.json");
-            if (!jsonInfoFile.Directory.Exists) Directory.CreateDirectory(jsonInfoFile.Directory.FullName);
-
-            string jsonInfo = File.Exists(jsonInfoFile.FullName) ? File.ReadAllText(jsonInfoFile.FullName) : null;
-            List<ChildItem> localDocsMPO = string.IsNullOrEmpty(jsonInfo) ? new List<ChildItem>() : JsonConvert.DeserializeObject<List<ChildItem>>(jsonInfo);
-
-            var client = new WebClient();
-            foreach (var doc in docsMPO)
-            {
-                UILogUpdate($"{doc.MpoCodigo} atualizando");
-                string docLink = $"http://ons.org.br{doc.FileRef}";
-                FileInfo docFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/{doc.MpoCodigo}.pdf");
-
-                string revisao = localDocsMPO.Where(w => w.MpoCodigo == doc.MpoCodigo).Select(s => s._Revision).FirstOrDefault();
-                if (revisao == doc._Revision)
-                {
-                    UILogUpdate($"{doc.MpoCodigo} já se encontra na revisão vigente");
-                    continue;
-                }
-                try
-                {
-                    client.DownloadFile(docLink, docFile.FullName);
-                    UILogUpdate($"{doc.MpoCodigo} atualizado da revisão {revisao} para revisão {doc._Revision} em {docFile.FullName}");
-                }
-                catch (Exception)
-                {
-                    UILogUpdate($"{doc.MpoCodigo} não foi possível atualização pelo link {docLink}");
-                }
-            }
-            List<string> mopLinks = docsMPO.Where(w => w.MpoMopsLink != null).SelectMany(s => s.MpoMopsLink).Distinct().ToList();
-            string mopDir = $"{Environment.CurrentDirectory}/Documentos/MPO/MOP";
-            if (!Directory.Exists(mopDir)) Directory.CreateDirectory(mopDir);
-            var mopsLocal = Directory.GetFiles(mopDir, "*.pdf").ToList();
-            var mopsVigentes = mopLinks.Select(s => $"{mopDir}\\{s.Split('/').Last()}").ToList();
-            mopsLocal = mopsLocal.Where(w=>!mopsVigentes.Contains(w)).ToList();
-            mopsLocal.ForEach(s => 
-            {
-                File.Delete(s);
-                UILogUpdate($"{s.Split('/').Last()} não está vigente e foi apagada");
-            });
-            foreach (var mopLink in mopLinks)
-            {
-                FileInfo mopFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/MOP/{mopLink.Split('/').Last()}");
-                UILogUpdate($"{mopFile.Name} atualizando");
-                if (mopFile.Exists)
-                {
-                    UILogUpdate($"{mopFile.Name} já está disponível");
-                    continue;
-                }
-                try
-                {
-                    client.DownloadFile(mopLink, mopFile.FullName);
-                    UILogUpdate($"{mopFile.Name} disponível em {mopFile.FullName}");
-                }
-                catch (Exception)
-                {
-                    UILogUpdate($"{mopFile.Name} não foi possível atualização pelo link {mopLink}");
-                }
-            }
-            string json = JsonConvert.SerializeObject(docsMPO);
-            File.WriteAllText(jsonInfoFile.FullName, json);
-            client.Dispose();
-            UILogUpdate("#Término - Procedimentos da Operação (MPO)");
-        }
-        #endregion UPDATE
+        #endregion
     }
 }

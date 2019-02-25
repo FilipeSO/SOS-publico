@@ -57,7 +57,7 @@ namespace SOS.Handlers
                     currentBrowserTab.downloadOutputLabel.Links.Add($"Download {downloadItemFile.Name} concluído disponível na pasta ".Length, downloadItemFile.DirectoryName.Length, downloadItemFile.DirectoryName);
                 });                
             }
-            //OnDownloadUpdatedFired?.Invoke(this, downloadItem);
+            OnDownloadUpdatedFired?.Invoke(this, downloadItem);
         }
     }
 }
