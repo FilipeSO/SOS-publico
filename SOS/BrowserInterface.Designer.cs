@@ -37,21 +37,21 @@
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.undoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.redoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.findMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
-            this.selectAllMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.configuraçõesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.exibirToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.browserTabControl = new System.Windows.Forms.TabControl();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.zoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.zoomToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.undoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.redoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
+            this.selectAllMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.configuraçõesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exibirToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exibirFerramentasToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.browserTabControl = new System.Windows.Forms.TabControl();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -139,11 +139,43 @@
             this.editToolStripMenuItem.Size = new System.Drawing.Size(49, 20);
             this.editToolStripMenuItem.Text = "Editar";
             // 
+            // findMenuItem
+            // 
+            this.findMenuItem.Name = "findMenuItem";
+            this.findMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F)));
+            this.findMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.findMenuItem.Text = "Procurar";
+            this.findMenuItem.Click += new System.EventHandler(this.FindMenuItemClick);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(156, 6);
+            // 
+            // zoomToolStripMenuItem
+            // 
+            this.zoomToolStripMenuItem.Name = "zoomToolStripMenuItem";
+            this.zoomToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.zoomToolStripMenuItem.Text = "Zoom +";
+            this.zoomToolStripMenuItem.Click += new System.EventHandler(this.ZoomInToolStripMenuItemClick);
+            // 
+            // zoomToolStripMenuItem1
+            // 
+            this.zoomToolStripMenuItem1.Name = "zoomToolStripMenuItem1";
+            this.zoomToolStripMenuItem1.Size = new System.Drawing.Size(159, 22);
+            this.zoomToolStripMenuItem1.Text = "Zoom -";
+            this.zoomToolStripMenuItem1.Click += new System.EventHandler(this.ZoomOutToolStripMenuItemClick);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(156, 6);
+            // 
             // undoMenuItem
             // 
             this.undoMenuItem.Name = "undoMenuItem";
             this.undoMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
-            this.undoMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.undoMenuItem.Size = new System.Drawing.Size(159, 22);
             this.undoMenuItem.Text = "Desfazer";
             this.undoMenuItem.Click += new System.EventHandler(this.UndoMenuItemClick);
             // 
@@ -151,27 +183,19 @@
             // 
             this.redoMenuItem.Name = "redoMenuItem";
             this.redoMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Y)));
-            this.redoMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.redoMenuItem.Size = new System.Drawing.Size(159, 22);
             this.redoMenuItem.Text = "Refazer";
             this.redoMenuItem.Click += new System.EventHandler(this.RedoMenuItemClick);
-            // 
-            // findMenuItem
-            // 
-            this.findMenuItem.Name = "findMenuItem";
-            this.findMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F)));
-            this.findMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.findMenuItem.Text = "Procurar";
-            this.findMenuItem.Click += new System.EventHandler(this.FindMenuItemClick);
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(177, 6);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(156, 6);
             // 
             // selectAllMenuItem
             // 
             this.selectAllMenuItem.Name = "selectAllMenuItem";
-            this.selectAllMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.selectAllMenuItem.Size = new System.Drawing.Size(159, 22);
             this.selectAllMenuItem.Text = "Selecionar tudo";
             this.selectAllMenuItem.Click += new System.EventHandler(this.SelectAllMenuItemClick);
             // 
@@ -189,54 +213,9 @@
             // exibirToolStripMenuItem
             // 
             this.exibirToolStripMenuItem.Name = "exibirToolStripMenuItem";
-            this.exibirToolStripMenuItem.Size = new System.Drawing.Size(226, 22);
+            this.exibirToolStripMenuItem.Size = new System.Drawing.Size(265, 22);
             this.exibirToolStripMenuItem.Text = "Exibir mensagens do console";
             this.exibirToolStripMenuItem.Click += new System.EventHandler(this.DisplayOutputMessagesItemClick);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(223, 6);
-            // 
-            // aboutToolStripMenuItem
-            // 
-            this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(226, 22);
-            this.aboutToolStripMenuItem.Text = "Sobre";
-            this.aboutToolStripMenuItem.Click += new System.EventHandler(this.AboutToolStripMenuItemClick);
-            // 
-            // browserTabControl
-            // 
-            this.browserTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.browserTabControl.Location = new System.Drawing.Point(0, 24);
-            this.browserTabControl.Name = "browserTabControl";
-            this.browserTabControl.SelectedIndex = 0;
-            this.browserTabControl.Size = new System.Drawing.Size(730, 466);
-            this.browserTabControl.TabIndex = 2;
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
-            // 
-            // zoomToolStripMenuItem
-            // 
-            this.zoomToolStripMenuItem.Name = "zoomToolStripMenuItem";
-            this.zoomToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.zoomToolStripMenuItem.Text = "Zoom +";
-            this.zoomToolStripMenuItem.Click += new System.EventHandler(this.ZoomInToolStripMenuItemClick);
-            // 
-            // zoomToolStripMenuItem1
-            // 
-            this.zoomToolStripMenuItem1.Name = "zoomToolStripMenuItem1";
-            this.zoomToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
-            this.zoomToolStripMenuItem1.Text = "Zoom -";
-            this.zoomToolStripMenuItem1.Click += new System.EventHandler(this.ZoomOutToolStripMenuItemClick);
-            // 
-            // toolStripSeparator3
-            // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
             // 
             // exibirFerramentasToolStripMenuItem
             // 
@@ -244,6 +223,32 @@
             this.exibirFerramentasToolStripMenuItem.Size = new System.Drawing.Size(265, 22);
             this.exibirFerramentasToolStripMenuItem.Text = "Exibir ferramentas do desenvolvedor";
             this.exibirFerramentasToolStripMenuItem.Click += new System.EventHandler(this.ShowDevToolsMenuItemClick);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(262, 6);
+            // 
+            // aboutToolStripMenuItem
+            // 
+            this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(265, 22);
+            this.aboutToolStripMenuItem.Text = "Sobre";
+            this.aboutToolStripMenuItem.Click += new System.EventHandler(this.AboutToolStripMenuItemClick);
+            // 
+            // browserTabControl
+            // 
+            this.browserTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.browserTabControl.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed;
+            this.browserTabControl.Location = new System.Drawing.Point(0, 24);
+            this.browserTabControl.Name = "browserTabControl";
+            this.browserTabControl.SelectedIndex = 0;
+            this.browserTabControl.ShowToolTips = true;
+            this.browserTabControl.Size = new System.Drawing.Size(730, 466);
+            this.browserTabControl.TabIndex = 2;
+            this.browserTabControl.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.BrowserTabDrawItem);
+            this.browserTabControl.SelectedIndexChanged += new System.EventHandler(this.BrowserTabSelectedIndexChanged);
+            this.browserTabControl.MouseClick += new System.Windows.Forms.MouseEventHandler(this.BrowserTabMouseClick);
             // 
             // BrowserInterface
             // 

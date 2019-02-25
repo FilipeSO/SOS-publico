@@ -22,7 +22,6 @@ namespace SOS
         private IntPtr browserHandle;
         private ChromeWidgetMessageInterceptor messageInterceptor;
         private bool multiThreadedMessageLoopEnabled;
-        private int tabTitleMaxStringLenght = 20;
 
         public BrowserTabUserControl(Action<string, int?> openNewTab, string url, bool multiThreadedMessageLoopEnabled)
         {
@@ -61,10 +60,10 @@ namespace SOS
 
             //displayOutput messages
             outputLabel.Visible = false;
-            //var version = String.Format("Chromium: {0}, CEF: {1}, CefSharp: {2}", Cef.ChromiumVersion, Cef.CefVersion, Cef.CefSharpVersion);
-            //DisplayOutput(version);
-            //browser.ConsoleMessage += OnBrowserConsoleMessage;
-            //browser.LoadError += OnLoadError;
+            var version = String.Format("Chromium: {0}, CEF: {1}, CefSharp: {2}", Cef.ChromiumVersion, Cef.CefVersion, Cef.CefSharpVersion);
+            DisplayOutput(version);
+            browser.ConsoleMessage += OnBrowserConsoleMessage;
+            browser.LoadError += OnLoadError;
 
             //browser.JavascriptObjectRepository.Register("bound", new BoundObject(), isAsync: false, options: BindingOptions.DefaultBinder);
             //browser.JavascriptObjectRepository.Register("boundAsync", new AsyncBoundObject(), isAsync: true, options: BindingOptions.DefaultBinder);
@@ -174,7 +173,11 @@ namespace SOS
 
         private void OnBrowserTitleChanged(object sender, TitleChangedEventArgs args)
         {
-            this.InvokeOnUiThreadIfRequired(() => Parent.Text = args.Title.Substring(0, Math.Min(args.Title.Length, tabTitleMaxStringLenght)));
+            this.InvokeOnUiThreadIfRequired(() => {
+                TabPage currentTabPage = Parent as TabPage;
+                currentTabPage.Text = args.Title.Length > 20 ? $"{args.Title.Substring(0, 20)}...".PadRight(30) : args.Title.PadRight(30); //6 espaços para o (x) da tab
+                currentTabPage.ToolTipText = args.Title;
+            });
         }
 
         private void OnBrowserAddressChanged(object sender, AddressChangedEventArgs args)

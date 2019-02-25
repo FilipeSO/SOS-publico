@@ -38,7 +38,8 @@ namespace SOS
             ResizeEnd += (s, e) => ResumeLayout(true);
 
             this.multiThreadedMessageLoopEnabled = multiThreadedMessageLoopEnabled;
-
+            
+            browserTabControl.TabPages.Add(new TabPage { ToolTipText = "Nova guia"});
         }
 
         private void BrowserInterface_Load(object sender, EventArgs e)
@@ -57,6 +58,63 @@ namespace SOS
             });
         }
 
+        private void BrowserTabDrawItem(object sender, DrawItemEventArgs e)
+        {
+            browserTabControl.SuspendLayout();
+            try
+            {
+                if (e.Index != browserTabControl.SelectedIndex)
+                    e.Graphics.FillRectangle(new SolidBrush(Color.LightGray), e.Bounds);
+                else
+                    e.Graphics.FillRectangle(new SolidBrush(Color.White), e.Bounds);
+
+                if (e.Index == browserTabControl.TabCount-1)
+                {
+                    e.Graphics.DrawString("+", new Font("Arial", 8, FontStyle.Bold), Brushes.Black, e.Bounds.Right - 25, e.Bounds.Top + 4);
+                    browserTabControl.TabPages[e.Index].Width = 18;
+                }
+                else
+                {
+                    e.Graphics.DrawString("x", new Font("Arial", 8, FontStyle.Bold), Brushes.Black, e.Bounds.Right - 15, e.Bounds.Top + 4);
+                    e.Graphics.DrawString(browserTabControl.TabPages[e.Index].Text, e.Font, Brushes.Black, e.Bounds.Left + 5, e.Bounds.Top + 4);
+                }
+                e.DrawFocusRectangle();
+            }
+            catch (Exception)
+            {
+                return;
+            }
+            browserTabControl.ResumeLayout();
+        }
+
+        private void BrowserTabMouseClick(object sender, MouseEventArgs e)
+        {
+            TabControl tc = (TabControl)sender;
+            Point p = e.Location;
+            Point _imageLocation = new Point(13, 5);
+            Point _imgHitArea = new Point(13, 2);
+            int _tabWidth = 0;
+            _tabWidth = browserTabControl.GetTabRect(tc.SelectedIndex).Width - (_imgHitArea.X);
+            Rectangle r = browserTabControl.GetTabRect(tc.SelectedIndex);
+            r.Offset(_tabWidth, _imgHitArea.Y);
+            r.Width = 16;
+            r.Height = 16;
+            if (r.Contains(p))
+            {
+                RemoveSelectedTab();
+            }
+        }
+
+
+        private void BrowserTabSelectedIndexChanged(object sender, EventArgs e)
+        {
+            if(browserTabControl.SelectedIndex == browserTabControl.TabCount-1)
+            {
+                AddTab(DefaultUrlForAddedTabs);
+            }
+        }
+
+
         public void AddTab(string url, int? insertIndex = null)
         {
             browserTabControl.SuspendLayout();
@@ -68,7 +126,8 @@ namespace SOS
 
             var tabPage = new TabPage(url)
             {
-                Dock = DockStyle.Fill
+                Dock = DockStyle.Fill,
+                Text = "Carregando...".PadRight(30)
             };
 
             //This call isn't required for the sample to work. 
@@ -79,7 +138,9 @@ namespace SOS
 
             if (insertIndex == null)
             {
-                browserTabControl.TabPages.Add(tabPage);
+                //browserTabControl.TabPages.Add(tabPage);
+                browserTabControl.TabPages.Insert(browserTabControl.TabCount-1,tabPage);
+
             }
             else
             {
@@ -169,9 +230,9 @@ namespace SOS
             AddTab(DefaultUrlForAddedTabs);            
         }
 
-        private void CloseTabToolStripMenuItemClick(object sender, EventArgs e)
+        private void RemoveSelectedTab()
         {
-            if (browserTabControl.TabPages.Count == 1)
+            if (browserTabControl.TabPages.Count == 2)
             {
                 return;
             }
@@ -190,12 +251,17 @@ namespace SOS
 
             tabPage.Dispose();
 
-            browserTabControl.SelectedIndex = currentIndex - 1;
+            browserTabControl.SelectedIndex = currentIndex > 1 ? currentIndex -1 : 0;
 
             if (browserTabControl.TabPages.Count == 0)
             {
                 ExitApplication();
             }
+        }
+
+        private void CloseTabToolStripMenuItemClick(object sender, EventArgs e)
+        {
+            RemoveSelectedTab();
         }
 
         private void UndoMenuItemClick(object sender, EventArgs e)
