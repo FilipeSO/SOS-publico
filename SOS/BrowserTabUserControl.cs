@@ -443,7 +443,7 @@ namespace SOS
         {
             ToggleBottomToolStrip();
         }
-        
+
         public void DisplayOutputMessages()
         {
             if (outputLabel.Visible)

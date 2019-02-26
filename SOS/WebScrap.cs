@@ -33,7 +33,7 @@ namespace SOS
         };
         static HttpClient client = new HttpClient(handler);
 
-        public class CookieAwareWebClient : WebClient
+        private class CookieAwareWebClient : WebClient
         {
             private CookieContainer m_container = cookieContainer;
 
@@ -49,28 +49,34 @@ namespace SOS
             }
         }
 
-        private string LogText = "";
+        static string LogText = "";
 
-        private void UILogUpdate(string report)
-        {
+        static void LogUpdate(string report, bool display = false)
+        {            
             LogText += $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: {report}{Environment.NewLine}";
             report = report.Length > 100 ? $"{report.Substring(0, 100)}..." : report;
-            statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => statusOutputLinkLabel.Text = $"Atualização de documentos: {report}");
+            if(display) statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => statusOutputLinkLabel.Text = $"Atualização de documentos: {report}");
         }
-        public void PushLogUpdate()
+        private void PushLogUpdate()
         {
             File.WriteAllText($"{Environment.CurrentDirectory}/Documentos/log.txt", LogText);
             LogText = "";
         }
-        
+
+        public void UpdateDocuments() //problema diagrama após mpo
+        {
+            UpdateMPO();
+            UpdateDiagramasONS();
+            PushLogUpdate();
+        }
 
         #region WEBSCRAP ONS MPO
 
-        public void UpdateMPO()
+        static void UpdateMPO()
         {
-            UILogUpdate("#Início - Procedimentos da Operação (MPO)");
-            UILogUpdate("ons.org.br/ conectando...");
-            List<ChildItem> docsMPO = WebScrap.ScrapMPOAsync("FURNAS").GetAwaiter().GetResult();
+            LogUpdate("#Início - Procedimentos da Operação (MPO)", true);
+            LogUpdate("ons.org.br/ conectando...", true);
+            List<ChildItem> docsMPO = ScrapMPOAsync("FURNAS").GetAwaiter().GetResult();
             FileInfo jsonInfoFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/info.json");
             if (!jsonInfoFile.Directory.Exists) Directory.CreateDirectory(jsonInfoFile.Directory.FullName);
 
@@ -80,24 +86,24 @@ namespace SOS
             var client = new WebClient();
             foreach (var doc in docsMPO)
             {
-                UILogUpdate($"{doc.MpoCodigo} atualizando");
+                LogUpdate($"{doc.MpoCodigo} atualizando", true);
                 string docLink = $"http://ons.org.br{doc.FileRef}";
                 FileInfo docFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/{doc.MpoCodigo}.pdf");
 
                 string revisao = localDocsMPO.Where(w => w.MpoCodigo == doc.MpoCodigo).Select(s => s._Revision).FirstOrDefault();
-                if (revisao == doc._Revision)
+                if (revisao == doc._Revision && docFile.Exists)
                 {
-                    UILogUpdate($"{doc.MpoCodigo} já se encontra na revisão vigente");
+                    LogUpdate($"{doc.MpoCodigo} já se encontra na revisão vigente");
                     continue;
                 }
                 try
                 {
                     client.DownloadFile(docLink, docFile.FullName);
-                    UILogUpdate($"{doc.MpoCodigo} atualizado da revisão {revisao} para revisão {doc._Revision} em {docFile.FullName}");
+                    LogUpdate($"{doc.MpoCodigo} atualizado da revisão {revisao} para revisão {doc._Revision} em {docFile.FullName}");
                 }
                 catch (Exception)
                 {
-                    UILogUpdate($"{doc.MpoCodigo} não foi possível atualização pelo link {docLink}");
+                    LogUpdate($"{doc.MpoCodigo} não foi possível atualização pelo link {docLink}");
                 }
             }
             List<string> mopLinks = docsMPO.Where(w => w.MpoMopsLink != null).SelectMany(s => s.MpoMopsLink).Distinct().ToList();
@@ -109,33 +115,32 @@ namespace SOS
             mopsLocal.ForEach(s =>
             {
                 File.Delete(s);
-                UILogUpdate($"{s.Split('/').Last()} não está vigente e foi apagada");
+                LogUpdate($"{s.Split('/').Last()} não está vigente e foi apagada");
             });
             foreach (var mopLink in mopLinks)
             {
                 FileInfo mopFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/MOP/{mopLink.Split('/').Last()}");
-                UILogUpdate($"{mopFile.Name} atualizando");
+                LogUpdate($"{mopFile.Name} atualizando", true);
                 if (mopFile.Exists)
                 {
-                    UILogUpdate($"{mopFile.Name} já está disponível");
+                    LogUpdate($"{mopFile.Name} já está disponível");
                     continue;
                 }
                 try
                 {
                     client.DownloadFile(mopLink, mopFile.FullName);
-                    UILogUpdate($"{mopFile.Name} disponível em {mopFile.FullName}");
+                    LogUpdate($"{mopFile.Name} disponível em {mopFile.FullName}");
                 }
                 catch (Exception)
                 {
-                    UILogUpdate($"{mopFile.Name} não foi possível atualização pelo link {mopLink}");
+                    LogUpdate($"{mopFile.Name} não foi possível atualização pelo link {mopLink}");
                 }
             }
             string json = JsonConvert.SerializeObject(docsMPO);
             File.WriteAllText(jsonInfoFile.FullName, json);
             client.Dispose();
-            UILogUpdate("#Término - Procedimentos da Operação (MPO)");
+            LogUpdate("#Término - Procedimentos da Operação (MPO)", true);
         }
-
 
         static async Task<List<ChildItem>> ScrapMPOAsync(string agente)
         {
@@ -171,12 +176,11 @@ namespace SOS
             return requestDigestToken;
         }
 
-
         static async Task<ModelMPO> GetModelMPO(string requestDigestToken)
-        {            
-            client.DefaultRequestHeaders.Add("Host", "ons.org.br");
+        {
+            //client.DefaultRequestHeaders.Add("Host", "ons.org.br");
             client.DefaultRequestHeaders.Add("X-RequestDigest", requestDigestToken);
-            client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate");
+            //client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate");
 
             string requestBody = @"<Request xmlns=""http://schemas.microsoft.com/sharepoint/clientquery/2009"" SchemaVersion=""15.0.0.0"" LibraryVersion=""16.0.0.0"" ApplicationName=""Javascript Library""><Actions><Query Id=""24"" ObjectPathId=""11""><Query SelectAllProperties=""true""><Properties /></Query><ChildItemQuery SelectAllProperties=""true""><Properties /></ChildItemQuery></Query></Actions><ObjectPaths><Method Id=""11"" ParentId=""8"" Name=""GetItems""><Parameters><Parameter TypeId=""{3d248d7b-fc86-40a3-aa97-02a75d69fb8a}""><Property Name=""DatesInUtc"" Type=""Boolean"">true</Property><Property Name=""FolderServerRelativeUrl"" Type=""String"">/MPO/Documento Normativo</Property><Property Name=""ListItemCollectionPosition"" Type=""Null"" /><Property Name=""ViewXml"" Type=""String"">&lt;View Scope='RecursiveAll'&gt;   &lt;Query&gt;       &lt;OrderBy&gt;       	&lt;FieldRef Name='Title' /&gt;       	&lt;FieldRef Name='MpoAssunto' /&gt;       	&lt;FieldRef Name='FileLeafRef' /&gt;   	&lt;/OrderBy&gt;   &lt;/Query&gt;&lt;/View&gt;</Property></Parameter></Parameters></Method><Method Id=""8"" ParentId=""6"" Name=""GetByTitle""><Parameters><Parameter Type=""String"">MPO</Parameter></Parameters></Method><Property Id=""6"" ParentId=""4"" Name=""Lists"" /><Property Id=""4"" ParentId=""2"" Name=""RootWeb"" /><Property Id=""2"" ParentId=""0"" Name=""Site"" /><StaticProperty Id=""0"" TypeId=""{3747adcd-a3c3-41b9-bfab-4a64dd2f1e0a}"" Name=""Current"" /></ObjectPaths></Request>";
             var httpContent = new StringContent(requestBody, Encoding.UTF8, "text/xml");
@@ -195,11 +199,11 @@ namespace SOS
 
         #region ONS DIAGRAMAS
 
-        public void UpdateDiagramasONS()
+        static void UpdateDiagramasONS()
         {
-            UILogUpdate("#Início - Diagramas ONS");
-            UILogUpdate("cdre.org.br/ conectando...");
-            List<Row> diagramasONS = WebScrap.ScrapOnsDiagramasAsync("fsaolive", "123123aA").GetAwaiter().GetResult();
+            LogUpdate("#Início - Diagramas ONS", true);
+            LogUpdate("cdre.org.br/ conectando...", true);
+            List<Row> diagramasONS = ScrapOnsDiagramasAsync("fsaolive", "123123aA").GetAwaiter().GetResult();
 
             FileInfo jsonInfoFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/Diagramas/info.json");
             if (!jsonInfoFile.Directory.Exists) Directory.CreateDirectory(jsonInfoFile.Directory.FullName);
@@ -207,35 +211,44 @@ namespace SOS
             string jsonInfo = File.Exists(jsonInfoFile.FullName) ? File.ReadAllText(jsonInfoFile.FullName) : null;
             List<Row> localDiagramas = string.IsNullOrEmpty(jsonInfo) ? new List<Row>() : JsonConvert.DeserializeObject<List<Row>>(jsonInfo);
 
-            var client = new WebScrap.CookieAwareWebClient();
+            var client = new CookieAwareWebClient();
 
             foreach (var diagrama in diagramasONS)
             {
-                UILogUpdate($"{diagrama.FileLeafRef} atualizando");
+                LogUpdate($"{diagrama.FileLeafRef} atualizando", true);
                 string diagramaLink = $"https://cdre.ons.org.br{diagrama.FileRef}";
 
-                FileInfo diagramaFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/Diagramas/{diagrama.FileLeafRef.Split('_').First()}.pdf");
+                FileInfo diagramaFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/Diagramas/{diagrama.FileLeafRef}");
 
-                string revisao = localDiagramas.Where(w => w.FileLeafRef.Split('_').First() == diagrama.FileLeafRef.Split('_').First()).Select(s => s.Modified).FirstOrDefault();
-                if (revisao == diagrama.Modified)
+                string revisao = localDiagramas.Where(w => w.FileLeafRef == diagrama.FileLeafRef).Select(s => s.Modified).FirstOrDefault();
+                if (revisao == diagrama.Modified && diagramaFile.Exists)
                 {
-                    UILogUpdate($"{diagrama.FileLeafRef} já se encontra na revisão vigente");
+                    LogUpdate($"{diagrama.FileLeafRef} já se encontra na revisão vigente");
                     continue;
                 }
                 try
                 {
                     client.DownloadFile(diagramaLink, diagramaFile.FullName);
-                    UILogUpdate($"{diagrama.FileLeafRef.Split('_').First()} atualizado da modificação {revisao} para modificação {diagrama.Modified} em {diagramaFile.FullName}");
+                    LogUpdate($"{diagrama.FileLeafRef.Split('_').First()} atualizado da modificação {revisao} para modificação {diagrama.Modified} em {diagramaFile.FullName}");
                 }
                 catch (Exception)
                 {
-                    UILogUpdate($"{diagrama.FileLeafRef.Split('_').First()} não foi possível atualização pelo link {diagramaLink}");
+                    LogUpdate($"{diagrama.FileLeafRef.Split('_').First()} não foi possível atualização pelo link {diagramaLink}");
                 }
             }
+            var diagramasLocal = Directory.GetFiles(jsonInfoFile.Directory.FullName, "*.pdf").ToList();
+            var diagramasVigentes = diagramasONS.Select(s => $"{jsonInfoFile.Directory.FullName}\\{s.FileLeafRef}").ToList();
+            diagramasLocal = diagramasLocal.Where(w => !diagramasVigentes.Contains(w)).ToList();
+            diagramasLocal.ForEach(s =>
+            {
+                File.Delete(s);
+                LogUpdate($"{s.Split('/').Last()} não está vigente e foi apagado");
+            });
+
             string json = JsonConvert.SerializeObject(diagramasONS);
             File.WriteAllText(jsonInfoFile.FullName, json);
             client.Dispose();
-            UILogUpdate("#Término - Diagramas ONS");
+            LogUpdate("#Término - Diagramas ONS", true);
         }
 
         static async Task<List<Row>> ScrapOnsDiagramasAsync(string username, string password)
@@ -259,8 +272,8 @@ namespace SOS
             //Regex formacaoIncorreta = new Regex("_(r|R)ev.[a-zA-Z]+"); //remover diagramas nomenclatura incorreta
             //diagramas = diagramas.Where(w => !formacaoIncorreta.IsMatch(w.FileLeafRef)).ToList(); //remover diagramas nomenclatura incorreta
 
-            Regex formatacaoCorreta = new Regex("_(r|R)ev.[0-9]+.pdf"); //manter diagramas com formacão correta
-            diagramas = diagramas.Where(w => formatacaoCorreta.IsMatch(w.FileLeafRef)).ToList(); //manter diagramas com formacão correta
+            //Regex formatacaoCorreta = new Regex("_(r|R)ev.[0-9]+.pdf"); //manter diagramas com formacão correta
+            //diagramas = diagramas.Where(w => formatacaoCorreta.IsMatch(w.FileLeafRef)).ToList(); //manter diagramas com formacão correta
             
             return diagramas;
             //var cookies = handler.CookieContainer.GetCookies(new Uri("https://cdre.ons.org.br"));
@@ -292,7 +305,7 @@ namespace SOS
         {
             string requestBody = $"username={username}&password={password}&submit.Signin=Entrar&CountLogin=0&CDRESolicitarCadastroUrl=http%3A%2F%2Fcdreweb.ons.org.br%2FCDRE%2FViews%2FSolicitarCadastro%2FSolicitarCadastro.aspx&POPAutenticacaoIntegradaUrl=https%3A%2F%2Facessointegrado.ons.org.br%2Facessointegrado%3FReturnUrl%3Dhttps%253a%252f%252fpops.ons.org.br%252fons.pop.federation%252fredirect%252f%253fwa%253dwsignin1.0%2526wtrealm%253d%252bhttps%25253a%25252f%25252fcdre.ons.org.br%25252f_trust%25252f%2526wctx%253dhttps%25253a%25252f%25252fcdre.ons.org.br%25252f_layouts%25252f15%25252fAuthenticate.aspx%25253fSource%25253d%2525252FMPODIAG%2525252FForms%2525252FDiags%2525252Easpx%2526wreply%253dhttps%25253a%25252f%25252fcdre.ons.org.br%25252f_trust%25252fdefault.aspx&PasswordRecoveryUrl=https%3A%2F%2Fpops.ons.org.br%2Fons.pop.federation%2Fpasswordrecovery%2F%3FReturnUrl%3Dhttps%253a%252f%252fpops.ons.org.br%252fons.pop.federation%252f%253fwa%253dwsignin1.0%2526wtrealm%253d%252bhttps%25253a%25252f%25252fcdre.ons.org.br%25252f_trust%25252f%2526wctx%253dhttps%25253a%25252f%25252fcdre.ons.org.br%25252f_layouts%25252f15%25252fAuthenticate.aspx%25253fSource%25253d%2525252FMPODIAG%2525252FForms%2525252FDiags%2525252Easpx%2526wreply%253dhttps%25253a%25252f%25252fcdre.ons.org.br%25252f_trust%25252fdefault.aspx";
             var httpContent = new StringContent(requestBody, Encoding.UTF8, "application/x-www-form-urlencoded");
-
+            
             //ON.AUTH_PROD COOKIE
             var resultPost = await client.PostAsync("https://pops.ons.org.br/ons.pop.federation/?wa=wsignin1.0&wtrealm=+https%3a%2f%2fcdre.ons.org.br%2f_trust%2f&wctx=https%3a%2f%2fcdre.ons.org.br%2f_layouts%2f15%2fAuthenticate.aspx%3fSource%3d%252F&wreply=https%3a%2f%2fcdre.ons.org.br%2f_trust%2fdefault.aspx", httpContent);
 

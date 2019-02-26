@@ -1,5 +1,6 @@
 ﻿using CefSharp;
 using CefSharp.WinForms;
+using CefSharp.WinForms.Internals;
 using Newtonsoft.Json;
 using SOS.Handlers;
 using System;
@@ -44,14 +45,43 @@ namespace SOS
         {
             FileInfo pdfFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/AO-AJ.SE.UHAT.pdf");
             AddTab(pdfFile.FullName);
-            WebScrap webScrap = new WebScrap(statusOutputLinkLabel);
-            Task.Run(() =>
-            {
-                //webScrap.UpdateMPO();
-                webScrap.UpdateDiagramasONS();
-                webScrap.PushLogUpdate();
-            });
+            UpdateStart();
         }
+        
+        private void UpdateStart()
+        {
+            WebScrap webScrap = new WebScrap(statusOutputLinkLabel);
+            updateStartToolStripMenuItem.Enabled = false;
+            updateStatusToolStripMenuItem.Checked = true;
+            statusOutputLinkLabel.Visible = true;
+            statusOutputLinkLabel.Enabled = false;
+            statusOutputLinkLabel.Links.Clear();
+            try
+            {
+                Task.Run(() =>
+                {
+                    webScrap.UpdateDocuments();
+                    statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => {
+                        statusOutputLinkLabel.Links.Add("MM/dd/yyyy HH:mm:ss: Atualização concluída. Cheque o histórico de atualização clicando ".Length, "aqui".Length, $"{Environment.CurrentDirectory}/Documentos/log.txt");
+                        statusOutputLinkLabel.Text = $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: Atualização concluída. Cheque o histórico de atualização clicando aqui";
+                        statusOutputLinkLabel.Enabled = true;
+                        updateStartToolStripMenuItem.Enabled = true;
+                    });
+                });
+            }
+            catch (Exception ex)
+            {
+                statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => statusOutputLinkLabel.Text = $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: Não foi possível concluir a atualização de documentos. Cheque se está conectado à Intranet e Internet. Caso o problema persista comunique o administrador da aplicação");
+                File.WriteAllText($"{Environment.CurrentDirectory}/Documentos/crash_report.txt", $"Data: {ex.Data}{Environment.NewLine}Source:{ex.Source}{Environment.NewLine}StackTrace:{ex.StackTrace}{Environment.NewLine}TargetSite:{ex.TargetSite}{Environment.NewLine}InnerExceptionMessage:{ex.InnerException.Message}{Environment.NewLine}ExceptionMessage{ex.Message}{Environment.NewLine}{Environment.NewLine}");
+            }
+        }
+
+        private void StatusOutputLinkLabelClick(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            statusOutputLinkLabel.LinkVisited = true;
+            AddTab(e.Link.LinkData.ToString());
+        }
+
         #region BrowserTabControl methods
         private BrowserTabUserControl GetCurrentTabControl()
         {
@@ -195,12 +225,32 @@ namespace SOS
         //        }
         //    }
         //}
+        private void UpdateStartItemClick(object sender, EventArgs e)
+        {
+            UpdateStart();
+        }
+
+        private void UpdateStatusItemClick(object sender, EventArgs e)
+        {
+            updateStatusToolStripMenuItem.Checked = !statusOutputLinkLabel.Visible;
+            statusOutputLinkLabel.Visible = !statusOutputLinkLabel.Visible;
+        }
+        private void DownloadMessagesItemClick(object sender, EventArgs e)
+        {
+            var control = GetCurrentTabControl();
+            if (control != null)
+            {
+                exibirMensagensDeDownloadToolStripMenuItem.Checked = !control.downloadOutputLabel.Visible;
+                control.downloadOutputLabel.Visible = !control.downloadOutputLabel.Visible;                
+            }
+        }
         private void DisplayOutputMessagesItemClick(object sender, EventArgs e)
         {
             var control = GetCurrentTabControl();
             if (control != null)
             {
                 control.DisplayOutputMessages();
+                exibirMsgConsoleToolStripMenuItem.Checked = !exibirMsgConsoleToolStripMenuItem.Checked;
             }
         }
 
