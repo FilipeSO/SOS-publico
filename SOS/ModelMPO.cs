@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace SOS
 {
+    public class Bookmark
+    {
+        public string Title { get; set; }
+        public string Page { get; set; }
+    }
     public class ContentTypeId
     {
         public string _ObjectType_ { get; set; }
@@ -79,6 +84,7 @@ namespace SOS
 
     public class ChildItem
     {
+        public List<Bookmark> Bookmarks { get; set; }
         public string _ObjectType_ { get; set; }
         public string _ObjectIdentity_ { get; set; }
         public string _ObjectVersion_ { get; set; }

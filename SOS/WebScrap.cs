@@ -12,6 +12,9 @@ using System.Web;
 using System.Xml;
 using CefSharp.WinForms.Internals;
 using System.Windows.Forms;
+using iTextSharp.text.pdf;
+using iTextSharp.text.pdf.parser;
+using System.Xml.Linq;
 
 namespace SOS
 {
@@ -49,19 +52,6 @@ namespace SOS
             }
         }
 
-        static string LogText = "";
-
-        static void LogUpdate(string report, bool display = false)
-        {            
-            LogText += $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: {report}{Environment.NewLine}";
-            report = report.Length > 100 ? $"{report.Substring(0, 100)}..." : report;
-            if(display) statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => statusOutputLinkLabel.Text = $"Atualização de documentos: {report}");
-        }
-        private void PushLogUpdate()
-        {
-            File.WriteAllText($"{Environment.CurrentDirectory}/Documentos/log.txt", LogText);
-            LogText = "";
-        }
 
         public void UpdateDocuments() //problema diagrama após mpo
         {
@@ -70,6 +60,22 @@ namespace SOS
             PushLogUpdate();
         }
 
+        #region logging methods
+        static string LogText = "";
+
+        static void LogUpdate(string report, bool display = false)
+        {
+            LogText += $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: {report}{Environment.NewLine}";
+            report = report.Length > 100 ? $"{report.Substring(0, 100)}..." : report;
+            if (display) statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => statusOutputLinkLabel.Text = $"Atualização de documentos: {report}");
+        }
+        private void PushLogUpdate()
+        {
+            File.WriteAllText($"{Environment.CurrentDirectory}/Documentos/log.txt", LogText);
+            LogText = "";
+        }
+        #endregion
+        
         #region WEBSCRAP ONS MPO
 
         static void UpdateMPO()
@@ -99,6 +105,22 @@ namespace SOS
                 try
                 {
                     client.DownloadFile(docLink, docFile.FullName);
+                    PdfReader reader = new PdfReader(docFile.FullName);
+                    //Collection of bookmarks
+                    IList<Dictionary<string, object>> bookmarks = SimpleBookmark.GetBookmark(reader);
+                    doc.Bookmarks = new List<Bookmark>();
+                    using (MemoryStream memoryStream = new MemoryStream())
+                    {                        
+                        SimpleBookmark.ExportToXML(bookmarks, memoryStream, "ISO8859-1", true);
+                        XElement xml = XElement.Parse(Encoding.ASCII.GetString(memoryStream.ToArray()));
+                        doc.Bookmarks = xml.Descendants("Title").Select(s => new Bookmark
+                        {
+                            Title = (string)s,
+                            Page = (string)s.Attribute("Page")
+                        }).ToList();
+                        File.WriteAllBytes(docFile.FullName.Replace(".pdf", ".xml"), memoryStream.ToArray());
+                    }
+
                     LogUpdate($"{doc.MpoCodigo} atualizado da revisão {revisao} para revisão {doc._Revision} em {docFile.FullName}");
                 }
                 catch (Exception)
