@@ -76,7 +76,7 @@ namespace SOS
         {
             LogUpdate("#Início - Procedimentos da Operação (MPO)", true);
             LogUpdate("ons.org.br/ conectando...", true);
-            List<ChildItem> docsMPO = ScrapMPOAsync("FURNAS").GetAwaiter().GetResult();
+            List<ChildItem> docsMPO = ScrapMPOAsync(null).GetAwaiter().GetResult();
             FileInfo jsonInfoFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/info.json");
             if (!jsonInfoFile.Directory.Exists) Directory.CreateDirectory(jsonInfoFile.Directory.FullName);
 
@@ -147,7 +147,7 @@ namespace SOS
             string requestToken = await GetRequestDigestToken();
             ModelMPO docs = await GetModelMPO(requestToken);
             var validDocs = docs._Child_Items_.Where(w => w.MpoAgentesAssinantes != null);
-            var filteredDocs = validDocs.Where(w => w.MpoAgentesAssinantes.Contains(agente)).ToList();
+            var filteredDocs = string.IsNullOrWhiteSpace(agente) ? validDocs.ToList() : validDocs.Where(w => w.MpoAgentesAssinantes.Contains(agente)).ToList();
             filteredDocs = CompileMopLinks(filteredDocs);
             return filteredDocs;
         }

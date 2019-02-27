@@ -44,7 +44,7 @@ namespace SOS
         private void BrowserInterface_Load(object sender, EventArgs e)
         {
             FileInfo pdfFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/AO-AJ.SE.UHAT.pdf");
-            AddTab(pdfFile.FullName);
+            AddTab(pdfFile.DirectoryName);
             UpdateStart();
         }
         
