@@ -105,22 +105,26 @@ namespace SOS
                 try
                 {
                     client.DownloadFile(docLink, docFile.FullName);
-                    PdfReader reader = new PdfReader(docFile.FullName);
                     //Collection of bookmarks
+                    PdfReader reader = new PdfReader(docFile.FullName);
                     IList<Dictionary<string, object>> bookmarks = SimpleBookmark.GetBookmark(reader);
                     doc.Bookmarks = new List<Bookmark>();
                     using (MemoryStream memoryStream = new MemoryStream())
-                    {                        
+                    {
                         SimpleBookmark.ExportToXML(bookmarks, memoryStream, "ISO8859-1", true);
-                        XElement xml = XElement.Parse(Encoding.ASCII.GetString(memoryStream.ToArray()));
-                        doc.Bookmarks = xml.Descendants("Title").Select(s => new Bookmark
-                        {
-                            Title = (string)s,
-                            Page = (string)s.Attribute("Page")
-                        }).ToList();
-                        File.WriteAllBytes(docFile.FullName.Replace(".pdf", ".xml"), memoryStream.ToArray());
+                        XDocument xml = XDocument.Parse(Encoding.ASCII.GetString(memoryStream.ToArray()));
+                        foreach (var node in xml.Descendants("Title").ToList())
+                        {  
+                            string Title = node.HasElements == true ? node.FirstNode.ToString() : (string)node;
+                            string Page = (string)node.Attribute("Page");
+                            doc.Bookmarks.Add(new Bookmark
+                            {
+                                Title = Title,
+                                Page = Page
+                            });
+                        }
+                        //File.WriteAllBytes(docFile.FullName.Replace(".pdf", ".xml"), memoryStream);
                     }
-
                     LogUpdate($"{doc.MpoCodigo} atualizado da revisão {revisao} para revisão {doc._Revision} em {docFile.FullName}");
                 }
                 catch (Exception)

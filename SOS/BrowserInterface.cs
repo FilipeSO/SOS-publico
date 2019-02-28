@@ -45,7 +45,7 @@ namespace SOS
         {
             FileInfo pdfFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/AO-AJ.SE.UHAT.pdf");
             AddTab($"{pdfFile.FullName}#page=5");
-            UpdateStart();
+            //UpdateStart();
         }
         
         private void UpdateStart()
@@ -82,6 +82,83 @@ namespace SOS
             AddTab(e.Link.LinkData.ToString());
         }
 
+        private void SearchBookmarksButtonClick(object sender, EventArgs e)
+        {
+            //PM.SE.3SP NUMERO 1239 para testes
+            FileInfo jsonInfoFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/info.json");
+            string jsonInfo = File.Exists(jsonInfoFile.FullName) ? File.ReadAllText(jsonInfoFile.FullName) : null;
+            List<ChildItem> localDocsMPO = string.IsNullOrEmpty(jsonInfo) ? new List<ChildItem>() : JsonConvert.DeserializeObject<List<ChildItem>>(jsonInfo);
+            localDocsMPO = localDocsMPO.Where(w => w.Bookmarks != null).ToList();
+            for (int i = 0; i < localDocsMPO.Count; i++)
+            {
+                var docNode = new TreeNode {Text = localDocsMPO[i].MpoCodigo};
+                for (int j = 0; j < localDocsMPO[i].Bookmarks.Count; j++)
+                {
+                    if (localDocsMPO[i].Bookmarks[j].Title.ToLower().Contains(textBox1.Text.ToLower()))
+                    {
+                        docNode.Nodes.Add(new TreeNode { Text = $"{localDocsMPO[i].Bookmarks[j].Title}", Tag = localDocsMPO[i].Bookmarks[j].Page.Split(' ').FirstOrDefault() });
+                    }
+                }
+                if(docNode.Nodes.Count>0)treeView1.Nodes.Add(docNode);
+            }
+        }
+
+        private void TreeViewSearchNodeClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            if (e.Node.Tag != null)
+            {
+                FileInfo pdfFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/{e.Node.Parent.Text}.pdf");
+                AddTab($"{pdfFile.FullName}#page={e.Node.Tag}");
+                treeView1.Focus();
+            }       
+        }
+        private string TreenodeTextToFit(string nodeText, int length) 
+        {
+            //treeview não aceita newline; tive problema para definir os bounds do texto após o fit
+            //TODO drawmode treeview para multiple line
+            List<string> listNodeText = new List<string>();
+            for (var i = 0; i < nodeText.Length; i += 60)
+            {
+                listNodeText.Add(nodeText.Substring(i, Math.Min(60, nodeText.Length - i)));
+            }
+            return String.Join(Environment.NewLine, listNodeText);
+        }
+        private void TreeViewSearchNodeDraw(object sender, DrawTreeNodeEventArgs e)
+        {
+
+            if (e.Node == null) return;
+
+            // if treeview's HideSelection property is "True", 
+            // this will always returns "False" on unfocused treeview
+            var selected = (e.State & TreeNodeStates.Selected) == TreeNodeStates.Selected;
+            var unfocused = !e.Node.TreeView.Focused;
+            Font font = new Font(e.Node.NodeFont ?? e.Node.TreeView.Font, FontStyle.Underline);
+            
+            // we need to do owner drawing only on a selected node
+            // and when the treeview is unfocused, else let the OS do it for us
+            if (selected && unfocused)
+            {
+                e.Graphics.FillRectangle(SystemBrushes.Highlight, e.Bounds);
+                TextRenderer.DrawText(e.Graphics, e.Node.Text, font, e.Bounds, SystemColors.HighlightText, TextFormatFlags.GlyphOverhangPadding);
+            }
+            else if (e.State == TreeNodeStates.Hot)
+            {
+                //foreColor = Color.Red;
+                TextRenderer.DrawText(e.Graphics, e.Node.Text, font, e.Bounds, Color.Blue, Color.White, TextFormatFlags.GlyphOverhangPadding);
+            }
+            else
+            {
+                e.DrawDefault = true;
+            }
+
+            if (e.Node.Tag != null) //adicionar número da página
+            {
+                //TextRenderer.DrawText(e.Graphics, e.Node.Tag.ToString(), font, e.Bounds, Color.Blue, Color.White, TextFormatFlags.GlyphOverhangPadding);
+
+                e.Graphics.DrawString(e.Node.Tag.ToString(), font, Brushes.Black, e.Bounds.Right + 2, e.Bounds.Top);
+            }
+        }
+
         #region BrowserTabControl methods
         private BrowserTabUserControl GetCurrentTabControl()
         {
@@ -116,7 +193,7 @@ namespace SOS
                     e.Graphics.DrawString("x", new Font("Arial", 8, FontStyle.Bold), Brushes.Black, e.Bounds.Right - 15, e.Bounds.Top + 4);
                     e.Graphics.DrawString(browserTabControl.TabPages[e.Index].Text, e.Font, Brushes.Black, e.Bounds.Left + 5, e.Bounds.Top + 4);
                 }
-                e.DrawFocusRectangle();
+                e.DrawFocusRectangle();               
             }
             catch (Exception)
             {
