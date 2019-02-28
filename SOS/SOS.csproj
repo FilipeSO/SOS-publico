@@ -87,6 +87,7 @@
     <Compile Include="AboutBox.Designer.cs">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="ModelSearchBookmark.cs" />
     <Compile Include="BrowserInterface.cs">
       <SubType>Form</SubType>
     </Compile>

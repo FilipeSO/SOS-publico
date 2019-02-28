@@ -45,7 +45,7 @@ namespace SOS
         {
             FileInfo pdfFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/AO-AJ.SE.UHAT.pdf");
             AddTab($"{pdfFile.FullName}#page=5");
-            //UpdateStart();
+            UpdateStart();
         }
         
         private void UpdateStart()
@@ -85,21 +85,21 @@ namespace SOS
         private void SearchBookmarksButtonClick(object sender, EventArgs e)
         {
             //PM.SE.3SP NUMERO 1239 para testes
-            FileInfo jsonInfoFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/info.json");
-            string jsonInfo = File.Exists(jsonInfoFile.FullName) ? File.ReadAllText(jsonInfoFile.FullName) : null;
-            List<ChildItem> localDocsMPO = string.IsNullOrEmpty(jsonInfo) ? new List<ChildItem>() : JsonConvert.DeserializeObject<List<ChildItem>>(jsonInfo);
-            localDocsMPO = localDocsMPO.Where(w => w.Bookmarks != null).ToList();
-            for (int i = 0; i < localDocsMPO.Count; i++)
+            FileInfo jsonBookmarkFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/bookmarks.json");
+            string bookmarkInfo = File.Exists(jsonBookmarkFile.FullName) ? File.ReadAllText(jsonBookmarkFile.FullName) : null;
+            var localBookmarks = string.IsNullOrEmpty(bookmarkInfo) ? new List<ModelSearchBookmark>() : JsonConvert.DeserializeObject<IEnumerable<ModelSearchBookmark>>(bookmarkInfo);
+            localBookmarks = localBookmarks.Where(w => w.Bookmarks != null);
+            foreach (var doc in localBookmarks)
             {
-                var docNode = new TreeNode {Text = localDocsMPO[i].MpoCodigo};
-                for (int j = 0; j < localDocsMPO[i].Bookmarks.Count; j++)
+                var docNode = new TreeNode { Text = doc.MpoCodigo };
+                foreach (var bookmark in doc.Bookmarks)
                 {
-                    if (localDocsMPO[i].Bookmarks[j].Title.ToLower().Contains(textBox1.Text.ToLower()))
+                    if (bookmark.Title.ToLower().Contains(textBox1.Text.ToLower()))
                     {
-                        docNode.Nodes.Add(new TreeNode { Text = $"{localDocsMPO[i].Bookmarks[j].Title}", Tag = localDocsMPO[i].Bookmarks[j].Page.Split(' ').FirstOrDefault() });
+                        docNode.Nodes.Add(new TreeNode { Text = $"{bookmark.Title}", Tag = bookmark.Page.Split(' ')[0] });
                     }
                 }
-                if(docNode.Nodes.Count>0)treeView1.Nodes.Add(docNode);
+                if (docNode.Nodes.Count > 0) treeView1.Nodes.Add(docNode);
             }
         }
 
@@ -133,7 +133,8 @@ namespace SOS
             var selected = (e.State & TreeNodeStates.Selected) == TreeNodeStates.Selected;
             var unfocused = !e.Node.TreeView.Focused;
             Font font = new Font(e.Node.NodeFont ?? e.Node.TreeView.Font, FontStyle.Underline);
-            
+            //Font fontPage = new Font(e.Node.NodeFont.FontFamily, e.Node.NodeFont.Size -2, FontStyle.Underline);
+
             // we need to do owner drawing only on a selected node
             // and when the treeview is unfocused, else let the OS do it for us
             if (selected && unfocused)
@@ -155,7 +156,7 @@ namespace SOS
             {
                 //TextRenderer.DrawText(e.Graphics, e.Node.Tag.ToString(), font, e.Bounds, Color.Blue, Color.White, TextFormatFlags.GlyphOverhangPadding);
 
-                e.Graphics.DrawString(e.Node.Tag.ToString(), font, Brushes.Black, e.Bounds.Right + 2, e.Bounds.Top);
+                e.Graphics.DrawString(e.Node.Tag.ToString(), font, Brushes.Black, e.Bounds.Right, e.Bounds.Top);
             }
         }
 

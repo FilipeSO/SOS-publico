@@ -75,19 +75,51 @@ namespace SOS
             LogText = "";
         }
         #endregion
-        
+
+        #region Indexing methods
+        private static IEnumerable<Bookmark> GetPdfBookmark(FileInfo docFile)
+        {
+            PdfReader reader = new PdfReader(docFile.FullName);
+            IList<Dictionary<string, object>> bookmarks = SimpleBookmark.GetBookmark(reader);
+            var listBookmarks = new List<Bookmark>();
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                SimpleBookmark.ExportToXML(bookmarks, memoryStream, "ISO8859-1", true);
+                XDocument xml = XDocument.Parse(Encoding.ASCII.GetString(memoryStream.ToArray()));
+                foreach (var node in xml.Descendants("Title"))
+                {
+                    string Title = node.HasElements == true ? node.FirstNode.ToString() : (string)node;
+                    string Page = (string)node.Attribute("Page");
+                    listBookmarks.Add(new Bookmark
+                    {
+                        Title = Title,
+                        Page = Page
+                    });
+                }
+                //File.WriteAllBytes(docFile.FullName.Replace(".pdf", ".xml"), memoryStream.ToArray());
+            }
+            return listBookmarks;
+        }
+        #endregion
+
         #region WEBSCRAP ONS MPO
 
         static void UpdateMPO()
         {
             LogUpdate("#Início - Procedimentos da Operação (MPO)", true);
             LogUpdate("ons.org.br/ conectando...", true);
-            List<ChildItem> docsMPO = ScrapMPOAsync(null).GetAwaiter().GetResult();
+            IEnumerable<ChildItem> docsMPO = ScrapMPOAsync(null).GetAwaiter().GetResult();
             FileInfo jsonInfoFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/info.json");
+            FileInfo jsonBookmarkFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/bookmarks.json");
+
             if (!jsonInfoFile.Directory.Exists) Directory.CreateDirectory(jsonInfoFile.Directory.FullName);
 
             string jsonInfo = File.Exists(jsonInfoFile.FullName) ? File.ReadAllText(jsonInfoFile.FullName) : null;
-            List<ChildItem> localDocsMPO = string.IsNullOrEmpty(jsonInfo) ? new List<ChildItem>() : JsonConvert.DeserializeObject<List<ChildItem>>(jsonInfo);
+            var localDocsMPO = string.IsNullOrEmpty(jsonInfo) ? new List<ChildItem>() : JsonConvert.DeserializeObject<IEnumerable<ChildItem>>(jsonInfo);
+
+            string bookmarkInfo = File.Exists(jsonBookmarkFile.FullName) ? File.ReadAllText(jsonBookmarkFile.FullName) : null;
+            var localBookmarks = string.IsNullOrEmpty(bookmarkInfo) ? new List<ModelSearchBookmark>() : JsonConvert.DeserializeObject<IList<ModelSearchBookmark>>(bookmarkInfo);
+            bool bookmarkUpdate = false;
 
             var client = new WebClient();
             foreach (var doc in docsMPO)
@@ -106,24 +138,22 @@ namespace SOS
                 {
                     client.DownloadFile(docLink, docFile.FullName);
                     //Collection of bookmarks
-                    PdfReader reader = new PdfReader(docFile.FullName);
-                    IList<Dictionary<string, object>> bookmarks = SimpleBookmark.GetBookmark(reader);
-                    doc.Bookmarks = new List<Bookmark>();
-                    using (MemoryStream memoryStream = new MemoryStream())
+                    bookmarkUpdate = true;
+                    var listBookmarks = GetPdfBookmark(docFile);
+                    if (localBookmarks.Any(w => w.MpoCodigo == doc.MpoCodigo))
                     {
-                        SimpleBookmark.ExportToXML(bookmarks, memoryStream, "ISO8859-1", true);
-                        XDocument xml = XDocument.Parse(Encoding.ASCII.GetString(memoryStream.ToArray()));
-                        foreach (var node in xml.Descendants("Title").ToList())
-                        {  
-                            string Title = node.HasElements == true ? node.FirstNode.ToString() : (string)node;
-                            string Page = (string)node.Attribute("Page");
-                            doc.Bookmarks.Add(new Bookmark
-                            {
-                                Title = Title,
-                                Page = Page
-                            });
+                        foreach (var item in localBookmarks)
+                        {
+                            if (item.MpoCodigo == doc.MpoCodigo) item.Bookmarks = listBookmarks;
                         }
-                        //File.WriteAllBytes(docFile.FullName.Replace(".pdf", ".xml"), memoryStream);
+                    }
+                    else
+                    {
+                        localBookmarks.Add(new ModelSearchBookmark
+                        {
+                            MpoCodigo = doc.MpoCodigo,
+                            Bookmarks = listBookmarks
+                        });
                     }
                     LogUpdate($"{doc.MpoCodigo} atualizado da revisão {revisao} para revisão {doc._Revision} em {docFile.FullName}");
                 }
@@ -132,17 +162,21 @@ namespace SOS
                     LogUpdate($"{doc.MpoCodigo} não foi possível atualização pelo link {docLink}");
                 }
             }
-            List<string> mopLinks = docsMPO.Where(w => w.MpoMopsLink != null).SelectMany(s => s.MpoMopsLink).Distinct().ToList();
-            string mopDir = $"{Environment.CurrentDirectory}/Documentos/MPO/MOP";
-            if (!Directory.Exists(mopDir)) Directory.CreateDirectory(mopDir);
-            var mopsLocal = Directory.GetFiles(mopDir, "*.pdf").ToList();
-            var mopsVigentes = mopLinks.Select(s => $"{mopDir}\\{s.Split('/').Last()}").ToList();
-            mopsLocal = mopsLocal.Where(w => !mopsVigentes.Contains(w)).ToList();
-            mopsLocal.ForEach(s =>
+            if (bookmarkUpdate)
             {
-                File.Delete(s);
-                LogUpdate($"{s.Split('/').Last()} não está vigente e foi apagada");
-            });
+                File.WriteAllText(jsonBookmarkFile.FullName, JsonConvert.SerializeObject(localBookmarks));
+            }
+
+            var mopLinks = docsMPO.Where(w => w.MpoMopsLink != null).SelectMany(s => s.MpoMopsLink).Distinct();                
+            string mopDir = $"{Environment.CurrentDirectory}/Documentos/MPO/MOP";
+            if (!Directory.Exists(mopDir)) Directory.CreateDirectory(mopDir);                      
+            var mopsVigentes = mopLinks.Select(s => $"{mopDir}\\{s.Split('/').Last()}");
+            var mopsLocal = Directory.GetFiles(mopDir, "*.pdf").Where(w => !mopsVigentes.Contains(w));
+            foreach (var item in mopsLocal)
+            {
+                File.Delete(item);
+                LogUpdate($"{item.Split('/').Last()} não está vigente e foi apagada");
+            }
             foreach (var mopLink in mopLinks)
             {
                 FileInfo mopFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/MOP/{mopLink.Split('/').Last()}");
@@ -162,23 +196,22 @@ namespace SOS
                     LogUpdate($"{mopFile.Name} não foi possível atualização pelo link {mopLink}");
                 }
             }
-            string json = JsonConvert.SerializeObject(docsMPO);
-            File.WriteAllText(jsonInfoFile.FullName, json);
+            File.WriteAllText(jsonInfoFile.FullName, JsonConvert.SerializeObject(docsMPO));
             client.Dispose();
             LogUpdate("#Término - Procedimentos da Operação (MPO)", true);
         }
 
-        static async Task<List<ChildItem>> ScrapMPOAsync(string agente)
+        static async Task<IEnumerable<ChildItem>> ScrapMPOAsync(string agente)
         {
             string requestToken = await GetRequestDigestToken();
             ModelMPO docs = await GetModelMPO(requestToken);
             var validDocs = docs._Child_Items_.Where(w => w.MpoAgentesAssinantes != null);
-            var filteredDocs = string.IsNullOrWhiteSpace(agente) ? validDocs.ToList() : validDocs.Where(w => w.MpoAgentesAssinantes.Contains(agente)).ToList();
+            var filteredDocs = string.IsNullOrWhiteSpace(agente) ? validDocs : validDocs.Where(w => w.MpoAgentesAssinantes.Contains(agente));
             filteredDocs = CompileMopLinks(filteredDocs);
             return filteredDocs;
         }
 
-        static List<ChildItem> CompileMopLinks(List<ChildItem> docs)
+        static IEnumerable<ChildItem> CompileMopLinks(IEnumerable<ChildItem> docs)
         {
             foreach (var item in docs.Where(w => w.MpoAlteradosPelasMops != null))
             {
@@ -229,13 +262,13 @@ namespace SOS
         {
             LogUpdate("#Início - Diagramas ONS", true);
             LogUpdate("cdre.org.br/ conectando...", true);
-            List<Row> diagramasONS = ScrapOnsDiagramasAsync("fsaolive", "123123aA").GetAwaiter().GetResult();
+            IEnumerable<Row> diagramasONS = ScrapOnsDiagramasAsync("fsaolive", "123123aA").GetAwaiter().GetResult();
 
             FileInfo jsonInfoFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/Diagramas/info.json");
             if (!jsonInfoFile.Directory.Exists) Directory.CreateDirectory(jsonInfoFile.Directory.FullName);
 
             string jsonInfo = File.Exists(jsonInfoFile.FullName) ? File.ReadAllText(jsonInfoFile.FullName) : null;
-            List<Row> localDiagramas = string.IsNullOrEmpty(jsonInfo) ? new List<Row>() : JsonConvert.DeserializeObject<List<Row>>(jsonInfo);
+            IEnumerable<Row> localDiagramas = string.IsNullOrEmpty(jsonInfo) ? new List<Row>() : JsonConvert.DeserializeObject<IEnumerable<Row>>(jsonInfo);
 
             var client = new CookieAwareWebClient();
 
@@ -255,29 +288,27 @@ namespace SOS
                 try
                 {
                     client.DownloadFile(diagramaLink, diagramaFile.FullName);
-                    LogUpdate($"{diagrama.FileLeafRef.Split('_').First()} atualizado da modificação {revisao} para modificação {diagrama.Modified} em {diagramaFile.FullName}");
+                    LogUpdate($"{diagrama.FileLeafRef.Split('_')[0]} atualizado da modificação {revisao} para modificação {diagrama.Modified} em {diagramaFile.FullName}");
                 }
                 catch (Exception)
                 {
-                    LogUpdate($"{diagrama.FileLeafRef.Split('_').First()} não foi possível atualização pelo link {diagramaLink}");
+                    LogUpdate($"{diagrama.FileLeafRef.Split('_')[0]} não foi possível atualização pelo link {diagramaLink}");
                 }
             }
-            var diagramasLocal = Directory.GetFiles(jsonInfoFile.Directory.FullName, "*.pdf").ToList();
-            var diagramasVigentes = diagramasONS.Select(s => $"{jsonInfoFile.Directory.FullName}\\{s.FileLeafRef}").ToList();
-            diagramasLocal = diagramasLocal.Where(w => !diagramasVigentes.Contains(w)).ToList();
-            diagramasLocal.ForEach(s =>
+            var diagramasVigentes = diagramasONS.Select(s => $"{jsonInfoFile.Directory.FullName}\\{s.FileLeafRef}");
+            var diagramasLocal = Directory.GetFiles(jsonInfoFile.Directory.FullName, "*.pdf").Where(w => !diagramasVigentes.Contains(w));
+            foreach (var item in diagramasLocal)
             {
-                File.Delete(s);
-                LogUpdate($"{s.Split('/').Last()} não está vigente e foi apagado");
-            });
-
+                File.Delete(item);
+                LogUpdate($"{item.Split('/').Last()} não está vigente e foi apagado");
+            }
             string json = JsonConvert.SerializeObject(diagramasONS);
             File.WriteAllText(jsonInfoFile.FullName, json);
             client.Dispose();
             LogUpdate("#Término - Diagramas ONS", true);
         }
 
-        static async Task<List<Row>> ScrapOnsDiagramasAsync(string username, string password)
+        static async Task<IEnumerable<Row>> ScrapOnsDiagramasAsync(string username, string password)
         {
             await DiagramasAuthCDRE(username,password);
 
@@ -287,13 +318,12 @@ namespace SOS
             var resultContent = await resultPost.Content.ReadAsStringAsync();
             ModelDiagramasONS jsonDiagramas = JsonConvert.DeserializeObject<ModelDiagramasONS>(resultContent);
             List<Row> diagramas = jsonDiagramas.Row.ToList(); //resultado de 500 em 500 registros, limitação da api oferecida pelo ons
-
             while (jsonDiagramas.NextHref != null)
             {
                 resultPost = await client.PostAsync($"{urlRaizDiagramas}&{jsonDiagramas.NextHref.TrimStart('?')}", null);
                 resultContent = await resultPost.Content.ReadAsStringAsync();
                 jsonDiagramas = JsonConvert.DeserializeObject<ModelDiagramasONS>(resultContent);
-                diagramas.AddRange(jsonDiagramas.Row.ToList());
+                diagramas.AddRange(jsonDiagramas.Row);
             }
             //Regex formacaoIncorreta = new Regex("_(r|R)ev.[a-zA-Z]+"); //remover diagramas nomenclatura incorreta
             //diagramas = diagramas.Where(w => !formacaoIncorreta.IsMatch(w.FileLeafRef)).ToList(); //remover diagramas nomenclatura incorreta
@@ -338,7 +368,6 @@ namespace SOS
             //XML AUTH REDIRECT POST 
             resultPost = await client.PostAsync("https://pops.ons.org.br/ons.pop.federation/redirect/?wa=wsignin1.0&wtrealm=+https%3a%2f%2fcdre.ons.org.br%2f_trust%2f&wctx=https%3a%2f%2fcdre.ons.org.br%2f_layouts%2f15%2fAuthenticate.aspx%3fSource%3d%252F&wreply=https%3a%2f%2fcdre.ons.org.br%2f_trust%2fdefault.aspx", null);
             var content = await resultPost.Content.ReadAsStringAsync();
-            var cookies = handler.CookieContainer.GetCookies(new Uri("https://cdre.ons.org.br"));
 
             XmlDocument xml = new XmlDocument();
             xml.LoadXml(content);

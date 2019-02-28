@@ -6,11 +6,6 @@ using System.Threading.Tasks;
 
 namespace SOS
 {
-    public class Bookmark
-    {
-        public string Title { get; set; }
-        public string Page { get; set; }
-    }
     public class ContentTypeId
     {
         public string _ObjectType_ { get; set; }
@@ -84,7 +79,6 @@ namespace SOS
 
     public class ChildItem
     {
-        public List<Bookmark> Bookmarks { get; set; }
         public string _ObjectType_ { get; set; }
         public string _ObjectIdentity_ { get; set; }
         public string _ObjectVersion_ { get; set; }
@@ -108,7 +102,7 @@ namespace SOS
         public object MpoAssunto { get; set; }
         public string _Revision { get; set; }
         public string MpoAlteradosPelasMops { get; set; }
-        public List<string> MpoMopsLink { get; set; }
+        public IList<string> MpoMopsLink { get; set; }
         public object MpoMopsCancelar { get; set; }
         public object MpoEvento { get; set; }
         public object MpoVigencia { get; set; }
