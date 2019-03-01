@@ -92,7 +92,7 @@ namespace SOS
                     string Page = (string)node.Attribute("Page");
                     listBookmarks.Add(new Bookmark
                     {
-                        Title = Title,
+                        Title = Title.TrimEnd('\r', '\n', ' '),
                         Page = Page
                     });
                 }
@@ -109,13 +109,15 @@ namespace SOS
             LogUpdate("#Início - Procedimentos da Operação (MPO)", true);
             LogUpdate("ons.org.br/ conectando...", true);
             IEnumerable<ChildItem> docsMPO = ScrapMPOAsync(null).GetAwaiter().GetResult();
+            int totalItems = docsMPO.Count();
+            int counter = 1;
             FileInfo jsonInfoFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/info.json");
             FileInfo jsonBookmarkFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/bookmarks.json");
 
             if (!jsonInfoFile.Directory.Exists) Directory.CreateDirectory(jsonInfoFile.Directory.FullName);
 
             string jsonInfo = File.Exists(jsonInfoFile.FullName) ? File.ReadAllText(jsonInfoFile.FullName) : null;
-            var localDocsMPO = string.IsNullOrEmpty(jsonInfo) ? new List<ChildItem>() : JsonConvert.DeserializeObject<IEnumerable<ChildItem>>(jsonInfo);
+            var localDocsMPO = string.IsNullOrEmpty(jsonInfo) ? new List<ChildItem>() : JsonConvert.DeserializeObject<IEnumerable<ChildItem>>(jsonInfo); //problema ao corromper gravação do json
 
             string bookmarkInfo = File.Exists(jsonBookmarkFile.FullName) ? File.ReadAllText(jsonBookmarkFile.FullName) : null;
             var localBookmarks = string.IsNullOrEmpty(bookmarkInfo) ? new List<ModelSearchBookmark>() : JsonConvert.DeserializeObject<IList<ModelSearchBookmark>>(bookmarkInfo);
@@ -124,7 +126,7 @@ namespace SOS
             var client = new WebClient();
             foreach (var doc in docsMPO)
             {
-                LogUpdate($"{doc.MpoCodigo} atualizando", true);
+                LogUpdate($"{doc.MpoCodigo} atualizando {counter++} de {totalItems}", true);
                 string docLink = $"http://ons.org.br{doc.FileRef}";
                 FileInfo docFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/{doc.MpoCodigo}.pdf");
 
@@ -177,10 +179,12 @@ namespace SOS
                 File.Delete(item);
                 LogUpdate($"{item.Split('/').Last()} não está vigente e foi apagada");
             }
+            totalItems = mopLinks.Count();
+            counter = 1;
             foreach (var mopLink in mopLinks)
             {
                 FileInfo mopFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/MOP/{mopLink.Split('/').Last()}");
-                LogUpdate($"{mopFile.Name} atualizando", true);
+                LogUpdate($"{mopFile.Name} atualizando {counter++} de {totalItems}", true);
                 if (mopFile.Exists)
                 {
                     LogUpdate($"{mopFile.Name} já está disponível");
@@ -263,7 +267,8 @@ namespace SOS
             LogUpdate("#Início - Diagramas ONS", true);
             LogUpdate("cdre.org.br/ conectando...", true);
             IEnumerable<Row> diagramasONS = ScrapOnsDiagramasAsync("fsaolive", "123123aA").GetAwaiter().GetResult();
-
+            int totalItems = diagramasONS.Count();
+            int counter = 1;
             FileInfo jsonInfoFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/Diagramas/info.json");
             if (!jsonInfoFile.Directory.Exists) Directory.CreateDirectory(jsonInfoFile.Directory.FullName);
 
@@ -274,7 +279,7 @@ namespace SOS
 
             foreach (var diagrama in diagramasONS)
             {
-                LogUpdate($"{diagrama.FileLeafRef} atualizando", true);
+                LogUpdate($"{diagrama.FileLeafRef} atualizando {counter++} de {totalItems}", true);
                 string diagramaLink = $"https://cdre.ons.org.br{diagrama.FileRef}";
 
                 FileInfo diagramaFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/Diagramas/{diagrama.FileLeafRef}");
@@ -288,11 +293,11 @@ namespace SOS
                 try
                 {
                     client.DownloadFile(diagramaLink, diagramaFile.FullName);
-                    LogUpdate($"{diagrama.FileLeafRef.Split('_')[0]} atualizado da modificação {revisao} para modificação {diagrama.Modified} em {diagramaFile.FullName}");
+                    LogUpdate($"{diagrama.FileLeafRef} atualizado da modificação {revisao} para modificação {diagrama.Modified} em {diagramaFile.FullName}");
                 }
                 catch (Exception)
                 {
-                    LogUpdate($"{diagrama.FileLeafRef.Split('_')[0]} não foi possível atualização pelo link {diagramaLink}");
+                    LogUpdate($"{diagrama.FileLeafRef} não foi possível atualização pelo link {diagramaLink}");
                 }
             }
             var diagramasVigentes = diagramasONS.Select(s => $"{jsonInfoFile.Directory.FullName}\\{s.FileLeafRef}");

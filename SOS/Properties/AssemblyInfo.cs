@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // conjunto de atributos. Altere estes valores de atributo para modificar as informações
 // associada a um assembly.
 [assembly: AssemblyTitle("SOS")]
-[assembly: AssemblyDescription("Aplicação destinada a gestão e controle de versão de documentos necessários às salas de controle de agentes da operação do sistema elétrico brasileiro. Os documentos são exibidos em navegador web Chromium que permite a visualização e manipulação de documentos através de JavaScript.")]
+[assembly: AssemblyDescription("Aplicação destinada a gestão e controle de versão de documentos necessários às salas de controle de agentes da operação do sistema elétrico brasileiro.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("fsaolive@gmail.com")]
 [assembly: AssemblyProduct("SOS - Suporte à Operação de Sistemas Elétricos")]

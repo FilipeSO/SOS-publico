@@ -231,11 +231,11 @@
         private System.Windows.Forms.ToolStripButton findPreviousButton;
         private System.Windows.Forms.ToolStripButton findNextButton;
         private System.Windows.Forms.ToolStripButton findCloseButton;
-        private System.Windows.Forms.Panel browserPanel;
         public System.Windows.Forms.Label statusLabel;
         public System.Windows.Forms.ToolStripLabel findTextLabel;
         public System.Windows.Forms.ToolStripTextBox findTextBox;
         public System.Windows.Forms.Label outputLabel;
         public System.Windows.Forms.LinkLabel downloadOutputLabel;
+        public System.Windows.Forms.Panel browserPanel;
     }
 }

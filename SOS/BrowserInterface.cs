@@ -84,45 +84,95 @@ namespace SOS
 
         private void SearchBookmarksButtonClick(object sender, EventArgs e)
         {
+            treeViewSearch.BeginUpdate();
+            treeViewSearch.Nodes.Clear();
             //PM.SE.3SP NUMERO 1239 para testes
             FileInfo jsonBookmarkFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/bookmarks.json");
             string bookmarkInfo = File.Exists(jsonBookmarkFile.FullName) ? File.ReadAllText(jsonBookmarkFile.FullName) : null;
             var localBookmarks = string.IsNullOrEmpty(bookmarkInfo) ? new List<ModelSearchBookmark>() : JsonConvert.DeserializeObject<IEnumerable<ModelSearchBookmark>>(bookmarkInfo);
             localBookmarks = localBookmarks.Where(w => w.Bookmarks != null);
+            string searchText = $"{txtBookmarkSearch.Text.Trim()}"; 
+            IEnumerable<string> keyWords = RemoveDiacriticsAndSpecialCharactersToLower(searchText).Split(' ').Where(w => !string.IsNullOrWhiteSpace(w));
             foreach (var doc in localBookmarks)
             {
                 var docNode = new TreeNode { Text = doc.MpoCodigo };
                 foreach (var bookmark in doc.Bookmarks)
                 {
-                    if (bookmark.Title.ToLower().Contains(textBox1.Text.ToLower()))
+                    string title = RemoveDiacriticsAndSpecialCharactersToLower(bookmark.Title);
+                    string page = bookmark.Page.Split(' ')[0];
+                    int matchCheck = 0;
+                    foreach (var key in keyWords)
                     {
-                        docNode.Nodes.Add(new TreeNode { Text = $"{bookmark.Title}", Tag = bookmark.Page.Split(' ')[0] });
+                        if (title.IndexOf(key) > 0) matchCheck++;
+                    }
+                    if (matchCheck == keyWords.Count())
+                    {
+                        docNode.Nodes.Add(new TreeNode { Text = $"{bookmark.Title.TrimEnd('\r', '\n', ' ')}", Tag = page });
                     }
                 }
-                if (docNode.Nodes.Count > 0) treeView1.Nodes.Add(docNode);
+                if (docNode.Nodes.Count > 0) treeViewSearch.Nodes.Add(docNode);
             }
+            if (treeViewSearch.Nodes.Count == 0)
+            {
+                treeViewSearch.Nodes.Add($"Sua pesquisa - {txtBookmarkSearch.Text} - não encontrou nenhum documento correspondente.");
+                treeViewSearch.Nodes.Add($"Sugestões:");
+                var suggestionNodes = new TreeNode[] { new TreeNode("Certifique-se de que todas as palavras estejam escritas corretamente"), new TreeNode("Tente palavras-chave diferentes"), new TreeNode("Tente palavras-chave mais genéricas") };
+                treeViewSearch.Nodes[1].Nodes.AddRange(suggestionNodes);
+                treeViewSearch.ExpandAll();
+            }
+            treeViewSearch.EndUpdate();
         }
 
         private void TreeViewSearchNodeClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            if (e.Node.Tag != null)
+            treeViewSearch.Enabled = false;
+            if (e.Node.Tag != null && e.Button == MouseButtons.Right)
             {
+                treeViewSearch.SelectedNode = e.Node;
                 FileInfo pdfFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/{e.Node.Parent.Text}.pdf");
                 AddTab($"{pdfFile.FullName}#page={e.Node.Tag}");
-                treeView1.Focus();
-            }       
+            }
+            if (e.Node.Tag != null && e.Button == MouseButtons.Left)
+            {
+                treeViewSearch.SelectedNode = e.Node;
+                FileInfo pdfFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/{e.Node.Parent.Text}.pdf");
+                LoadActualTab($"{pdfFile.FullName}#page={e.Node.Tag}");
+            }
+            treeViewSearch.Enabled = true;
         }
+        private string RemoveDiacriticsAndSpecialCharactersToLower(string text)
+        {
+            byte[]  tempBytes = System.Text.Encoding.GetEncoding("ISO-8859-8").GetBytes(text.ToLower());
+            string str = System.Text.Encoding.UTF8.GetString(tempBytes);
+            StringBuilder sb = new StringBuilder();
+            foreach (char c in str)
+            {
+                if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '.' || c == '_')
+                {
+                    sb.Append(c);
+                }
+                else
+                {
+                    sb.Append(' ');
+
+                }
+            }
+            return sb.ToString();
+        }
+
+
         private string TreenodeTextToFit(string nodeText, int length) 
         {
             //treeview não aceita newline; tive problema para definir os bounds do texto após o fit
             //TODO drawmode treeview para multiple line
-            List<string> listNodeText = new List<string>();
+            IList<string> listNodeText = new List<string>();
             for (var i = 0; i < nodeText.Length; i += 60)
             {
                 listNodeText.Add(nodeText.Substring(i, Math.Min(60, nodeText.Length - i)));
             }
             return String.Join(Environment.NewLine, listNodeText);
         }
+
         private void TreeViewSearchNodeDraw(object sender, DrawTreeNodeEventArgs e)
         {
 
@@ -152,12 +202,12 @@ namespace SOS
                 e.DrawDefault = true;
             }
 
-            if (e.Node.Tag != null) //adicionar número da página
-            {
-                //TextRenderer.DrawText(e.Graphics, e.Node.Tag.ToString(), font, e.Bounds, Color.Blue, Color.White, TextFormatFlags.GlyphOverhangPadding);
+            //if (e.Node.Tag != null) //adicionar número da página
+            //{
+            //    //TextRenderer.DrawText(e.Graphics, e.Node.Tag.ToString(), font, e.Bounds, Color.Blue, Color.White, TextFormatFlags.GlyphOverhangPadding);
 
-                e.Graphics.DrawString(e.Node.Tag.ToString(), font, Brushes.Black, e.Bounds.Right, e.Bounds.Top);
-            }
+            //    e.Graphics.DrawString(e.Node.Tag.ToString(), font, Brushes.Black, e.Bounds.Right, e.Bounds.Top);
+            //}
         }
 
         #region BrowserTabControl methods
@@ -229,7 +279,29 @@ namespace SOS
                 AddTab(DefaultUrlForAddedTabs);
             }
         }
+        private void LoadActualTab(string url)
+        {
+            treeViewSearch.Enabled = false;
+            browserTabControl.SuspendLayout();
+            var tabPage = browserTabControl.Controls[browserTabControl.SelectedIndex];
+            var control = tabPage.Controls[0] as BrowserTabUserControl;
+            tabPage.Controls.Remove(control);
+            control.Dispose();//necessário para forçar reload sem cache para url parameters
 
+            var browser = new BrowserTabUserControl(AddTab, url, multiThreadedMessageLoopEnabled)
+            {
+                Dock = DockStyle.Fill,
+            };
+
+            //This call isn't required for the sample to work. 
+            //It's sole purpose is to demonstrate that #553 has been resolved.
+            browser.CreateControl();
+
+            tabPage.Controls.Add(browser);
+
+            browserTabControl.ResumeLayout(true);
+            treeViewSearch.Enabled = true;
+        }
 
         public void AddTab(string url, int? insertIndex = null)
         {

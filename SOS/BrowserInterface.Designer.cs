@@ -62,9 +62,9 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.treeView1 = new System.Windows.Forms.TreeView();
+            this.treeViewSearch = new System.Windows.Forms.TreeView();
             this.button1 = new System.Windows.Forms.Button();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.txtBookmarkSearch = new System.Windows.Forms.TextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.menuStrip1.SuspendLayout();
             this.browserTabControl.SuspendLayout();
@@ -354,9 +354,9 @@
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.treeView1);
+            this.tabPage1.Controls.Add(this.treeViewSearch);
             this.tabPage1.Controls.Add(this.button1);
-            this.tabPage1.Controls.Add(this.textBox1);
+            this.tabPage1.Controls.Add(this.txtBookmarkSearch);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
@@ -365,18 +365,18 @@
             this.tabPage1.Text = "tabPage1";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
-            // treeView1
+            // treeViewSearch
             // 
-            this.treeView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.treeView1.DrawMode = System.Windows.Forms.TreeViewDrawMode.OwnerDrawText;
-            this.treeView1.HideSelection = false;
-            this.treeView1.HotTracking = true;
-            this.treeView1.Location = new System.Drawing.Point(3, 46);
-            this.treeView1.Name = "treeView1";
-            this.treeView1.Size = new System.Drawing.Size(229, 378);
-            this.treeView1.TabIndex = 2;
-            this.treeView1.DrawNode += new System.Windows.Forms.DrawTreeNodeEventHandler(this.TreeViewSearchNodeDraw);
-            this.treeView1.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.TreeViewSearchNodeClick);
+            this.treeViewSearch.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.treeViewSearch.DrawMode = System.Windows.Forms.TreeViewDrawMode.OwnerDrawText;
+            this.treeViewSearch.HideSelection = false;
+            this.treeViewSearch.HotTracking = true;
+            this.treeViewSearch.Location = new System.Drawing.Point(3, 46);
+            this.treeViewSearch.Name = "treeViewSearch";
+            this.treeViewSearch.Size = new System.Drawing.Size(229, 378);
+            this.treeViewSearch.TabIndex = 2;
+            this.treeViewSearch.DrawNode += new System.Windows.Forms.DrawTreeNodeEventHandler(this.TreeViewSearchNodeDraw);
+            this.treeViewSearch.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.TreeViewSearchNodeClick);
             // 
             // button1
             // 
@@ -389,13 +389,13 @@
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.SearchBookmarksButtonClick);
             // 
-            // textBox1
+            // txtBookmarkSearch
             // 
-            this.textBox1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.textBox1.Location = new System.Drawing.Point(3, 3);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(229, 20);
-            this.textBox1.TabIndex = 0;
+            this.txtBookmarkSearch.Dock = System.Windows.Forms.DockStyle.Top;
+            this.txtBookmarkSearch.Location = new System.Drawing.Point(3, 3);
+            this.txtBookmarkSearch.Name = "txtBookmarkSearch";
+            this.txtBookmarkSearch.Size = new System.Drawing.Size(229, 20);
+            this.txtBookmarkSearch.TabIndex = 0;
             // 
             // tabPage2
             // 
@@ -468,9 +468,9 @@
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox txtBookmarkSearch;
         private System.Windows.Forms.TabPage tabPage2;
-        private System.Windows.Forms.TreeView treeView1;
+        private System.Windows.Forms.TreeView treeViewSearch;
     }
 }
 
