@@ -82,6 +82,12 @@ namespace SOS
             PdfReader reader = new PdfReader(docFile.FullName);
             IList<Dictionary<string, object>> bookmarks = SimpleBookmark.GetBookmark(reader);
             var listBookmarks = new List<Bookmark>();
+            //default primeiro bookmark é o nome do próprio documento
+            listBookmarks.Add(new Bookmark
+            {
+                Title = docFile.Name,
+                Page = "1"
+            });
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 SimpleBookmark.ExportToXML(bookmarks, memoryStream, "ISO8859-1", true);
@@ -114,13 +120,22 @@ namespace SOS
             FileInfo jsonInfoFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/info.json");
             FileInfo jsonBookmarkFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/bookmarks.json");
 
-            if (!jsonInfoFile.Directory.Exists) Directory.CreateDirectory(jsonInfoFile.Directory.FullName);
+            if (!jsonInfoFile.Directory.Exists) Directory.CreateDirectory(jsonInfoFile.Directory.FullName); //primeira execução do programa
 
             string jsonInfo = File.Exists(jsonInfoFile.FullName) ? File.ReadAllText(jsonInfoFile.FullName) : null;
-            var localDocsMPO = string.IsNullOrEmpty(jsonInfo) ? new List<ChildItem>() : JsonConvert.DeserializeObject<IEnumerable<ChildItem>>(jsonInfo); //problema ao corromper gravação do json
-
             string bookmarkInfo = File.Exists(jsonBookmarkFile.FullName) ? File.ReadAllText(jsonBookmarkFile.FullName) : null;
-            var localBookmarks = string.IsNullOrEmpty(bookmarkInfo) ? new List<ModelSearchBookmark>() : JsonConvert.DeserializeObject<IList<ModelSearchBookmark>>(bookmarkInfo);
+
+            var localDocsMPO = new List<ChildItem>();
+            var localBookmarks = new List<ModelSearchBookmark>();
+            try //problema ao corromper gravação do json //parse arquivo json inválido
+            {
+                localDocsMPO = JsonConvert.DeserializeObject<List<ChildItem>>(jsonInfo); 
+                localBookmarks = JsonConvert.DeserializeObject<List<ModelSearchBookmark>>(bookmarkInfo);
+            }
+            catch (Exception)
+            {                
+            }
+
             bool bookmarkUpdate = false;
 
             var client = new WebClient();
@@ -270,10 +285,17 @@ namespace SOS
             int totalItems = diagramasONS.Count();
             int counter = 1;
             FileInfo jsonInfoFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/Diagramas/info.json");
-            if (!jsonInfoFile.Directory.Exists) Directory.CreateDirectory(jsonInfoFile.Directory.FullName);
+            if (!jsonInfoFile.Directory.Exists) Directory.CreateDirectory(jsonInfoFile.Directory.FullName); //primeiro acesso
 
             string jsonInfo = File.Exists(jsonInfoFile.FullName) ? File.ReadAllText(jsonInfoFile.FullName) : null;
-            IEnumerable<Row> localDiagramas = string.IsNullOrEmpty(jsonInfo) ? new List<Row>() : JsonConvert.DeserializeObject<IEnumerable<Row>>(jsonInfo);
+            IEnumerable<Row>localDiagramas = new List<Row>();
+            try //obrigatório; caso json esteja corrompido; parse não causa exception para entrada inválida
+            {
+                localDiagramas = JsonConvert.DeserializeObject<IEnumerable<Row>>(jsonInfo);
+            }
+            catch (Exception)
+            {                
+            }
 
             var client = new CookieAwareWebClient();
 
@@ -307,8 +329,7 @@ namespace SOS
                 File.Delete(item);
                 LogUpdate($"{item.Split('/').Last()} não está vigente e foi apagado");
             }
-            string json = JsonConvert.SerializeObject(diagramasONS);
-            File.WriteAllText(jsonInfoFile.FullName, json);
+            File.WriteAllText(jsonInfoFile.FullName, JsonConvert.SerializeObject(diagramasONS));
             client.Dispose();
             LogUpdate("#Término - Diagramas ONS", true);
         }

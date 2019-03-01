@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -45,73 +46,114 @@ namespace SOS
         {
             FileInfo pdfFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/AO-AJ.SE.UHAT.pdf");
             AddTab($"{pdfFile.FullName}#page=5");
-            UpdateStart();
+            splitContainer1.SplitterDistance = 500; //padrao sos 400
+            LoadBookmarks();
+            //UpdateStart();
         }
-        
-        private void UpdateStart()
-        {
-            WebScrap webScrap = new WebScrap(statusOutputLinkLabel);
-            updateStartToolStripMenuItem.Enabled = false;
-            updateStatusToolStripMenuItem.Checked = true;
-            statusOutputLinkLabel.Visible = true;
-            statusOutputLinkLabel.Enabled = false;
-            statusOutputLinkLabel.Links.Clear();
-            try
-            {
-                Task.Run(() =>
-                {
-                    webScrap.UpdateDocuments();
-                    statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => {
-                        statusOutputLinkLabel.Links.Add("MM/dd/yyyy HH:mm:ss: Atualização concluída. Cheque o histórico de atualização clicando ".Length, "aqui".Length, $"{Environment.CurrentDirectory}/Documentos/log.txt");
-                        statusOutputLinkLabel.Text = $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: Atualização concluída. Cheque o histórico de atualização clicando aqui";
-                        statusOutputLinkLabel.Enabled = true;
-                        updateStartToolStripMenuItem.Enabled = true;
-                    });
-                });
-            }
-            catch (Exception ex)
-            {
-                statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => statusOutputLinkLabel.Text = $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: Não foi possível concluir a atualização de documentos. Cheque se está conectado à Intranet e Internet. Caso o problema persista comunique o administrador da aplicação");
-                File.WriteAllText($"{Environment.CurrentDirectory}/Documentos/crash_report.txt", $"Data: {ex.Data}{Environment.NewLine}Source:{ex.Source}{Environment.NewLine}StackTrace:{ex.StackTrace}{Environment.NewLine}TargetSite:{ex.TargetSite}{Environment.NewLine}InnerExceptionMessage:{ex.InnerException.Message}{Environment.NewLine}ExceptionMessage{ex.Message}{Environment.NewLine}{Environment.NewLine}");
-            }
-        }
+        //private void SearchBookmarksDataGrid()
+        //{
+        //    Stopwatch stopWatch = new Stopwatch();
+        //    stopWatch.Start();
+        //    dataGrid1.SuspendLayout();
+        //    DataTable dtDocs = new DataTable();
+        //    dtDocs.Columns.Add("Documento", typeof(string));
+        //    DataTable dtDocsIndex = new DataTable();
+        //    dtDocsIndex.Columns.Add("Documento", typeof(string));
+        //    dtDocsIndex.Columns.Add("Índice", typeof(string));
+        //    dtDocsIndex.Columns.Add("Página", typeof(string));
+        //    string searchText = $"{txtBookmarkSearch.Text.Trim()}";
+        //    IEnumerable<string> keyWords = RemoveDiacriticsAndSpecialCharactersToLower(searchText).Split(' ').Where(w => !string.IsNullOrWhiteSpace(w));
+        //    Parallel.ForEach(localBookmarks, doc =>
+        //    {
+        //        bool hasMatch = false;
+        //        foreach (var bookmark in doc.Bookmarks)
+        //        {
+        //            int matchCheck = 0;
+        //            string title = RemoveDiacriticsAndSpecialCharactersToLower(bookmark.Title);
+        //            foreach (var key in keyWords)
+        //            {
+        //                if (title.IndexOf(key) > 0) matchCheck++;
+        //            }
+        //            if (matchCheck == keyWords.Count())
+        //            {
+        //                string page = bookmark.Page.Split(' ')[0];
+        //                title = bookmark.Title.Length > 100 ? $"{bookmark.Title.Substring(0, 100)}..." : bookmark.Title;
+        //                dtDocsIndex.Rows.Add(doc.MpoCodigo, title, page);
+        //                hasMatch = true;
+        //            }
+        //        }
+        //        if (hasMatch) dtDocs.Rows.Add(doc.MpoCodigo);
+        //    });
+        //    int results = dtDocsIndex.Rows.Count;
+        //    if (dtDocsIndex.Rows.Count == 0)
+        //    {
+        //        dtDocs.Rows.Add($"Sua pesquisa - {txtBookmarkSearch.Text} - não encontrou nenhum documento correspondente.");
+        //        dtDocs.Rows.Add($"Sugestões:");
+        //        dtDocs.Rows.Add("Certifique-se de que todas as palavras estejam escritas corretamente");
+        //        dtDocs.Rows.Add("Tente palavras-chave diferentes");
+        //        dtDocs.Rows.Add("Tente palavras-chave mais genéricas");
+        //    }
+        //    DataSet dsDataset = new DataSet();
+        //    dsDataset.Tables.Add(dtDocs);
+        //    dsDataset.Tables.Add(dtDocsIndex);
+        //    DataRelation Datatablerelation = new DataRelation("Resultados encontrados", dsDataset.Tables[0].Columns[0], dsDataset.Tables[1].Columns[0], true);
+        //    dsDataset.Relations.Add(Datatablerelation);
+        //    dataGrid1.DataSource = dsDataset.Tables[0];
+        //    stopWatch.Stop();
+        //    treeviewStatusLabel.Text = String.Format("{0} resultados em {1:0.00} segundos", results, stopWatch.Elapsed.TotalSeconds);
+        //    dataGrid1.ResumeLayout(true);
+        //}
 
-        private void StatusOutputLinkLabelClick(object sender, LinkLabelLinkClickedEventArgs e)
+        private HashSet<ModelSearchBookmark> localBookmarks;
+        private void LoadBookmarks()
         {
-            statusOutputLinkLabel.LinkVisited = true;
-            AddTab(e.Link.LinkData.ToString());
-        }
-
-        private void SearchBookmarksButtonClick(object sender, EventArgs e)
-        {
-            treeViewSearch.BeginUpdate();
-            treeViewSearch.Nodes.Clear();
             //PM.SE.3SP NUMERO 1239 para testes
             FileInfo jsonBookmarkFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/bookmarks.json");
             string bookmarkInfo = File.Exists(jsonBookmarkFile.FullName) ? File.ReadAllText(jsonBookmarkFile.FullName) : null;
-            var localBookmarks = string.IsNullOrEmpty(bookmarkInfo) ? new List<ModelSearchBookmark>() : JsonConvert.DeserializeObject<IEnumerable<ModelSearchBookmark>>(bookmarkInfo);
-            localBookmarks = localBookmarks.Where(w => w.Bookmarks != null);
-            string searchText = $"{txtBookmarkSearch.Text.Trim()}"; 
-            IEnumerable<string> keyWords = RemoveDiacriticsAndSpecialCharactersToLower(searchText).Split(' ').Where(w => !string.IsNullOrWhiteSpace(w));
-            foreach (var doc in localBookmarks)
+            try
             {
-                var docNode = new TreeNode { Text = doc.MpoCodigo };
-                foreach (var bookmark in doc.Bookmarks)
-                {
-                    string title = RemoveDiacriticsAndSpecialCharactersToLower(bookmark.Title);
-                    string page = bookmark.Page.Split(' ')[0];
-                    int matchCheck = 0;
-                    foreach (var key in keyWords)
-                    {
-                        if (title.IndexOf(key) > 0) matchCheck++;
-                    }
-                    if (matchCheck == keyWords.Count())
-                    {
-                        docNode.Nodes.Add(new TreeNode { Text = $"{bookmark.Title.TrimEnd('\r', '\n', ' ')}", Tag = page });
-                    }
-                }
-                if (docNode.Nodes.Count > 0) treeViewSearch.Nodes.Add(docNode);
+                localBookmarks = JsonConvert.DeserializeObject<HashSet<ModelSearchBookmark>>(bookmarkInfo);
             }
+            catch (Exception)
+            {
+            }
+        }
+
+        private void SearchBookmarks()
+        {
+            Stopwatch stopWatch = new Stopwatch();
+            stopWatch.Start();
+            string searchText = $"{txtBookmarkSearch.Text.Trim()}";
+            treeViewSearch.BeginUpdate();
+            treeViewSearch.Nodes.Clear();
+            treeviewStatusLabel.Text = "Procurando...";
+            if (searchText.Length > 3)
+            {
+                IEnumerable<string> keyWords = RemoveDiacriticsAndSpecialCharactersToLower(searchText).Split(' ').Where(w => !string.IsNullOrWhiteSpace(w));
+                var treeNodeResults = new List<TreeNode>();
+                Parallel.ForEach(localBookmarks, doc =>
+                {
+                    var docNode = new TreeNode { Text = doc.MpoCodigo };
+                    foreach (var bookmark in doc.Bookmarks)
+                    {
+                        int matchCheck = 0;
+                        string title = RemoveDiacriticsAndSpecialCharactersToLower(bookmark.Title);
+                        foreach (var key in keyWords)
+                        {
+                            if (title.IndexOf(key) > 0) matchCheck++;
+                        }
+                        if (matchCheck == keyWords.Count())
+                        {
+                            string page = bookmark.Page.Split(' ')[0];
+                            title = bookmark.Title.Length > 70 ? $"{bookmark.Title.Substring(0, 70)}..." : bookmark.Title;
+                            docNode.Nodes.Add(new TreeNode { Text = $"{title}", Tag = page, ToolTipText = bookmark.Title });
+                        }
+                    }
+                    if (docNode.Nodes.Count > 0) treeNodeResults.Add(docNode);
+                });
+                if (treeNodeResults.Count > 0) treeViewSearch.Nodes.AddRange(treeNodeResults.ToArray());
+            }
+            int results = treeViewSearch.GetNodeCount(true);
             if (treeViewSearch.Nodes.Count == 0)
             {
                 treeViewSearch.Nodes.Add($"Sua pesquisa - {txtBookmarkSearch.Text} - não encontrou nenhum documento correspondente.");
@@ -121,6 +163,21 @@ namespace SOS
                 treeViewSearch.ExpandAll();
             }
             treeViewSearch.EndUpdate();
+            stopWatch.Stop();
+            treeviewStatusLabel.Text = String.Format("{0} resultados em {1:0.00} segundos", results, stopWatch.Elapsed.TotalSeconds);
+        }
+        private void SearchBookmarksButtonClick(object sender, EventArgs e)
+        {
+            SearchBookmarks();
+        }
+
+        private void TxtBookmarkSearchKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode != Keys.Enter)
+            {
+                return;
+            }
+            SearchBookmarks();
         }
 
         private void TreeViewSearchNodeClick(object sender, TreeNodeMouseClickEventArgs e)
@@ -209,6 +266,42 @@ namespace SOS
             //    e.Graphics.DrawString(e.Node.Tag.ToString(), font, Brushes.Black, e.Bounds.Right, e.Bounds.Top);
             //}
         }
+
+        #region Update methods
+        private void UpdateStart()
+        {
+            WebScrap webScrap = new WebScrap(statusOutputLinkLabel);
+            updateStartToolStripMenuItem.Enabled = false;
+            updateStatusToolStripMenuItem.Checked = true;
+            statusOutputLinkLabel.Visible = true;
+            statusOutputLinkLabel.Enabled = false;
+            statusOutputLinkLabel.Links.Clear();
+            try
+            {
+                Task.Run(() =>
+                {
+                    webScrap.UpdateDocuments();
+                    statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => {
+                        statusOutputLinkLabel.Links.Add("MM/dd/yyyy HH:mm:ss: Atualização concluída. Cheque o histórico de atualização clicando ".Length, "aqui".Length, $"{Environment.CurrentDirectory}/Documentos/log.txt");
+                        statusOutputLinkLabel.Text = $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: Atualização concluída. Cheque o histórico de atualização clicando aqui";
+                        statusOutputLinkLabel.Enabled = true;
+                        updateStartToolStripMenuItem.Enabled = true;
+                    });
+                });
+            }
+            catch (Exception ex)
+            {
+                statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => statusOutputLinkLabel.Text = $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: Não foi possível concluir a atualização de documentos. Cheque se está conectado à Intranet e Internet. Caso o problema persista comunique o administrador da aplicação");
+                File.WriteAllText($"{Environment.CurrentDirectory}/Documentos/crash_report.txt", $"Data: {ex.Data}{Environment.NewLine}Source:{ex.Source}{Environment.NewLine}StackTrace:{ex.StackTrace}{Environment.NewLine}TargetSite:{ex.TargetSite}{Environment.NewLine}InnerExceptionMessage:{ex.InnerException.Message}{Environment.NewLine}ExceptionMessage{ex.Message}{Environment.NewLine}{Environment.NewLine}");
+            }
+        }
+        private void StatusOutputLinkLabelClick(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            statusOutputLinkLabel.LinkVisited = true;
+            AddTab(e.Link.LinkData.ToString());
+        }
+
+        #endregion
 
         #region BrowserTabControl methods
         private BrowserTabUserControl GetCurrentTabControl()

@@ -63,6 +63,7 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.treeViewSearch = new System.Windows.Forms.TreeView();
+            this.treeviewStatusLabel = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
             this.txtBookmarkSearch = new System.Windows.Forms.TextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
@@ -355,6 +356,7 @@
             // tabPage1
             // 
             this.tabPage1.Controls.Add(this.treeViewSearch);
+            this.tabPage1.Controls.Add(this.treeviewStatusLabel);
             this.tabPage1.Controls.Add(this.button1);
             this.tabPage1.Controls.Add(this.txtBookmarkSearch);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
@@ -371,12 +373,22 @@
             this.treeViewSearch.DrawMode = System.Windows.Forms.TreeViewDrawMode.OwnerDrawText;
             this.treeViewSearch.HideSelection = false;
             this.treeViewSearch.HotTracking = true;
-            this.treeViewSearch.Location = new System.Drawing.Point(3, 46);
+            this.treeViewSearch.Location = new System.Drawing.Point(3, 59);
             this.treeViewSearch.Name = "treeViewSearch";
-            this.treeViewSearch.Size = new System.Drawing.Size(229, 378);
+            this.treeViewSearch.ShowNodeToolTips = true;
+            this.treeViewSearch.Size = new System.Drawing.Size(229, 365);
             this.treeViewSearch.TabIndex = 2;
             this.treeViewSearch.DrawNode += new System.Windows.Forms.DrawTreeNodeEventHandler(this.TreeViewSearchNodeDraw);
             this.treeViewSearch.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.TreeViewSearchNodeClick);
+            // 
+            // treeviewStatusLabel
+            // 
+            this.treeviewStatusLabel.AutoSize = true;
+            this.treeviewStatusLabel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.treeviewStatusLabel.Location = new System.Drawing.Point(3, 46);
+            this.treeviewStatusLabel.Name = "treeviewStatusLabel";
+            this.treeviewStatusLabel.Size = new System.Drawing.Size(0, 13);
+            this.treeviewStatusLabel.TabIndex = 3;
             // 
             // button1
             // 
@@ -396,6 +408,7 @@
             this.txtBookmarkSearch.Name = "txtBookmarkSearch";
             this.txtBookmarkSearch.Size = new System.Drawing.Size(229, 20);
             this.txtBookmarkSearch.TabIndex = 0;
+            this.txtBookmarkSearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.TxtBookmarkSearchKeyDown);
             // 
             // tabPage2
             // 
@@ -471,6 +484,7 @@
         private System.Windows.Forms.TextBox txtBookmarkSearch;
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.TreeView treeViewSearch;
+        private System.Windows.Forms.Label treeviewStatusLabel;
     }
 }
 
