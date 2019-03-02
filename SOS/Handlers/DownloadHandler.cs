@@ -43,8 +43,7 @@ namespace SOS.Handlers
                     if (!currentBrowserTab.downloadOutputLabel.Visible) currentBrowserTab.downloadOutputLabel.Visible = true;
                     currentBrowserTab.downloadOutputLabel.Enabled = false;
                     //currentBrowserTab.downloadOutputLabel.LinkArea = new System.Windows.Forms.LinkArea(currentBrowserTab.downloadOutputLabel.Text.Length, currentBrowserTab.downloadOutputLabel.Text.Length);
-                    currentBrowserTab.downloadOutputLabel.Text = $"Download {downloadItem.SuggestedFileName}: {((float)downloadItem.CurrentSpeed/1000000).ToString("0.00")} MB/s - {((float)downloadItem.ReceivedBytes/1000000).ToString("0.00")} MB de {((float)downloadItem.TotalBytes/1000000).ToString("0.00")} MB, destino: {downloadItem.FullPath}";  
-                    
+                    currentBrowserTab.downloadOutputLabel.Text = $"Download {downloadItem.SuggestedFileName}: {((float)downloadItem.CurrentSpeed/1000000).ToString("0.00")} MB/s - {((float)downloadItem.ReceivedBytes/1000000).ToString("0.00")} MB de {((float)downloadItem.TotalBytes/1000000).ToString("0.00")} MB, destino: {downloadItem.FullPath}";                      
                 });
             }
             if (downloadItem.IsComplete)

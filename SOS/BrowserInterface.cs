@@ -33,7 +33,6 @@ namespace SOS
             var bitness = Environment.Is64BitProcess ? "x64" : "x86";
             Text = "SOS - " + bitness;
             WindowState = FormWindowState.Maximized;
-
             Load += BrowserInterface_Load;
             //Only perform layout when control has completly finished resizing
             ResizeBegin += (s, e) => SuspendLayout();
@@ -44,12 +43,14 @@ namespace SOS
 
         private void BrowserInterface_Load(object sender, EventArgs e)
         {
+            splitContainer1.SplitterDistance = 500;
             FileInfo pdfFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/AO-AJ.SE.UHAT.pdf");
             AddTab($"{pdfFile.FullName}#page=5");
-            splitContainer1.SplitterDistance = 500; //padrao sos 400
             LoadBookmarks();
-            //UpdateStart();
+            LoadDefaultTreeview();
+            UpdateStart();
         }
+
         //private void SearchBookmarksDataGrid()
         //{
         //    Stopwatch stopWatch = new Stopwatch();
@@ -104,12 +105,49 @@ namespace SOS
         //    dataGrid1.ResumeLayout(true);
         //}
 
+        private void LoadDefaultTreeview()
+        {
+            treeViewSearch.BeginUpdate();
+            ListDirectory(treeViewSearch, $"{Environment.CurrentDirectory}/Documentos");
+            treeviewStatusLabel.Text = $"Estão vigentes {treeViewSearch.GetNodeCount(true)} diagramas e documentos";
+            treeViewSearch.EndUpdate();
+        }
+
+        private void ListDirectory(TreeView treeView, string path)
+        {
+            treeView.Nodes.Clear();
+            var rootDirectories = new DirectoryInfo(path).GetDirectories();
+            foreach (var directory in rootDirectories)
+            {
+                treeViewSearch.Nodes.Add(CreateDirectoryNode(directory));
+            }
+        }
+
+        private static TreeNode CreateDirectoryNode(DirectoryInfo directoryInfo)
+        {
+            var directoryNode = new TreeNode(directoryInfo.Name);
+            foreach (var directory in directoryInfo.GetDirectories())
+                directoryNode.Nodes.Add(CreateDirectoryNode(directory));
+            foreach (var file in directoryInfo.GetFiles())
+                if(!file.Name.EndsWith(".txt") && !file.Name.EndsWith(".json")) directoryNode.Nodes.Add(new TreeNode{ Text = file.Name, Tag=file.FullName });
+            return directoryNode;
+        }
+
+        //private HashSet<TreeNode> DefaultDirectoryNodes;
         private HashSet<ModelSearchBookmark> localBookmarks;
         private void LoadBookmarks()
         {
             //PM.SE.3SP NUMERO 1239 para testes
-            FileInfo jsonBookmarkFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/bookmarks.json");
+            FileInfo jsonBookmarkFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/bookmarks.json");
             string bookmarkInfo = File.Exists(jsonBookmarkFile.FullName) ? File.ReadAllText(jsonBookmarkFile.FullName) : null;
+            if (bookmarkInfo == null)
+            {
+                SearchBookmarkPanelEnabled(false);
+            }
+            else
+            {
+                SearchBookmarkPanelEnabled(true);
+            }
             try
             {
                 localBookmarks = JsonConvert.DeserializeObject<HashSet<ModelSearchBookmark>>(bookmarkInfo);
@@ -119,14 +157,31 @@ namespace SOS
             }
         }
 
+        private void SearchBookmarkPanelEnabled(bool v)
+        {
+            treeviewStatusLabel.Text = v == true ? "" : "Aguardando conclusão da atualização";
+            treeviewStatusLabel.Enabled = v;
+            txtBookmarkSearch.Enabled = v;
+            treeViewSearch.Enabled = v;
+            btnSearch.Enabled = v;
+        }
+
         private void SearchBookmarks()
         {
+            if (localBookmarks == null) return;
+            string searchText = $"{txtBookmarkSearch.Text.Trim()}";
+
+            if (searchText.Length == 0)
+            {
+                LoadDefaultTreeview();
+                return;
+            }
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
-            string searchText = $"{txtBookmarkSearch.Text.Trim()}";
             treeViewSearch.BeginUpdate();
             treeViewSearch.Nodes.Clear();
             treeviewStatusLabel.Text = "Procurando...";
+
             if (searchText.Length > 3)
             {
                 IEnumerable<string> keyWords = RemoveDiacriticsAndSpecialCharactersToLower(searchText).Split(' ').Where(w => !string.IsNullOrWhiteSpace(w));
@@ -135,18 +190,17 @@ namespace SOS
                 {
                     var docNode = new TreeNode { Text = doc.MpoCodigo };
                     foreach (var bookmark in doc.Bookmarks)
-                    {
+                    {                
                         int matchCheck = 0;
                         string title = RemoveDiacriticsAndSpecialCharactersToLower(bookmark.Title);
                         foreach (var key in keyWords)
                         {
-                            if (title.IndexOf(key) > 0) matchCheck++;
+                            if (title.IndexOf(key) > -1) matchCheck++;
                         }
                         if (matchCheck == keyWords.Count())
-                        {
-                            string page = bookmark.Page.Split(' ')[0];
+                        {                    
                             title = bookmark.Title.Length > 70 ? $"{bookmark.Title.Substring(0, 70)}..." : bookmark.Title;
-                            docNode.Nodes.Add(new TreeNode { Text = $"{title}", Tag = page, ToolTipText = bookmark.Title });
+                            docNode.Nodes.Add(new TreeNode { Text = $"{title}", Tag = $"{bookmark.PathAndPage}", ToolTipText = bookmark.Title });
                         }
                     }
                     if (docNode.Nodes.Count > 0) treeNodeResults.Add(docNode);
@@ -170,7 +224,6 @@ namespace SOS
         {
             SearchBookmarks();
         }
-
         private void TxtBookmarkSearchKeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter)
@@ -182,20 +235,16 @@ namespace SOS
 
         private void TreeViewSearchNodeClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            treeViewSearch.Enabled = false;
             if (e.Node.Tag != null && e.Button == MouseButtons.Right)
             {
                 treeViewSearch.SelectedNode = e.Node;
-                FileInfo pdfFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/{e.Node.Parent.Text}.pdf");
-                AddTab($"{pdfFile.FullName}#page={e.Node.Tag}");
+                AddTab(e.Node.Tag.ToString());
             }
             if (e.Node.Tag != null && e.Button == MouseButtons.Left)
             {
                 treeViewSearch.SelectedNode = e.Node;
-                FileInfo pdfFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/{e.Node.Parent.Text}.pdf");
-                LoadActualTab($"{pdfFile.FullName}#page={e.Node.Tag}");
+                LoadActualTab(e.Node.Tag.ToString());
             }
-            treeViewSearch.Enabled = true;
         }
         private string RemoveDiacriticsAndSpecialCharactersToLower(string text)
         {
@@ -216,8 +265,7 @@ namespace SOS
             }
             return sb.ToString();
         }
-
-
+        
         private string TreenodeTextToFit(string nodeText, int length) 
         {
             //treeview não aceita newline; tive problema para definir os bounds do texto após o fit
@@ -286,6 +334,8 @@ namespace SOS
                         statusOutputLinkLabel.Text = $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: Atualização concluída. Cheque o histórico de atualização clicando aqui";
                         statusOutputLinkLabel.Enabled = true;
                         updateStartToolStripMenuItem.Enabled = true;
+                        LoadBookmarks();
+                        LoadDefaultTreeview();
                     });
                 });
             }

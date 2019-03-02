@@ -57,23 +57,23 @@ namespace SOS
         {
             UpdateMPO();
             UpdateDiagramasONS();
-            PushLogUpdate();
         }
 
         #region logging methods
-        static string LogText = "";
 
         static void LogUpdate(string report, bool display = false)
         {
-            LogText += $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: {report}{Environment.NewLine}";
+            string LogText = $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: {report}";
+            using (StreamWriter outfile = new StreamWriter($"{Environment.CurrentDirectory}/Documentos/log.txt", AppendLog))
+            {
+                outfile.WriteLine(LogText);
+            }
+            AppendLog = true;
             report = report.Length > 100 ? $"{report.Substring(0, 100)}..." : report;
             if (display) statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => statusOutputLinkLabel.Text = $"Atualização de documentos: {report}");
         }
-        private void PushLogUpdate()
-        {
-            File.WriteAllText($"{Environment.CurrentDirectory}/Documentos/log.txt", LogText);
-            LogText = "";
-        }
+        private static bool AppendLog = false;
+
         #endregion
 
         #region Indexing methods
@@ -86,7 +86,7 @@ namespace SOS
             listBookmarks.Add(new Bookmark
             {
                 Title = docFile.Name,
-                Page = "1"
+                PathAndPage = $"{docFile.FullName}#page=1"
             });
             using (MemoryStream memoryStream = new MemoryStream())
             {
@@ -99,7 +99,7 @@ namespace SOS
                     listBookmarks.Add(new Bookmark
                     {
                         Title = Title.TrimEnd('\r', '\n', ' '),
-                        Page = Page
+                        PathAndPage = $"{docFile.FullName}#page={Page.Split(' ')[0]}"
                     });
                 }
                 //File.WriteAllBytes(docFile.FullName.Replace(".pdf", ".xml"), memoryStream.ToArray());
@@ -108,7 +108,7 @@ namespace SOS
         }
         #endregion
 
-        #region WEBSCRAP ONS MPO
+        #region ONS MPO
 
         static void UpdateMPO()
         {
@@ -118,7 +118,7 @@ namespace SOS
             int totalItems = docsMPO.Count();
             int counter = 1;
             FileInfo jsonInfoFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/info.json");
-            FileInfo jsonBookmarkFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/bookmarks.json");
+            FileInfo jsonBookmarkFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/bookmarks.json");
 
             if (!jsonInfoFile.Directory.Exists) Directory.CreateDirectory(jsonInfoFile.Directory.FullName); //primeira execução do programa
 
@@ -135,9 +135,9 @@ namespace SOS
             catch (Exception)
             {                
             }
+            if (localBookmarks.Count == 0) localDocsMPO = new List<ChildItem>(); //forçar update completo caso bookmark corrompido
 
             bool bookmarkUpdate = false;
-
             var client = new WebClient();
             foreach (var doc in docsMPO)
             {
@@ -188,11 +188,11 @@ namespace SOS
             string mopDir = $"{Environment.CurrentDirectory}/Documentos/MPO/MOP";
             if (!Directory.Exists(mopDir)) Directory.CreateDirectory(mopDir);                      
             var mopsVigentes = mopLinks.Select(s => $"{mopDir}\\{s.Split('/').Last()}");
-            var mopsLocal = Directory.GetFiles(mopDir, "*.pdf").Where(w => !mopsVigentes.Contains(w));
+            var mopsLocal = Directory.GetFiles(mopDir, "*.pdf").Except(mopsVigentes);
             foreach (var item in mopsLocal)
             {
                 File.Delete(item);
-                LogUpdate($"{item.Split('/').Last()} não está vigente e foi apagada");
+                LogUpdate($"{item.Split('\\').Last()} não está vigente e foi apagada");
             }
             totalItems = mopLinks.Count();
             counter = 1;
@@ -323,11 +323,11 @@ namespace SOS
                 }
             }
             var diagramasVigentes = diagramasONS.Select(s => $"{jsonInfoFile.Directory.FullName}\\{s.FileLeafRef}");
-            var diagramasLocal = Directory.GetFiles(jsonInfoFile.Directory.FullName, "*.pdf").Where(w => !diagramasVigentes.Contains(w));
+            var diagramasLocal = Directory.GetFiles(jsonInfoFile.Directory.FullName, "*.pdf").Except(diagramasVigentes);
             foreach (var item in diagramasLocal)
             {
                 File.Delete(item);
-                LogUpdate($"{item.Split('/').Last()} não está vigente e foi apagado");
+                LogUpdate($"{item.Split('\\').Last()} não está vigente e foi apagado");
             }
             File.WriteAllText(jsonInfoFile.FullName, JsonConvert.SerializeObject(diagramasONS));
             client.Dispose();
