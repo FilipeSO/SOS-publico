@@ -15,16 +15,22 @@ using System.Windows.Forms;
 using iTextSharp.text.pdf;
 using iTextSharp.text.pdf.parser;
 using System.Xml.Linq;
+using Path = System.IO.Path;
 
 namespace SOS
 {
     public class WebScrap
     {
-        private static LinkLabel statusOutputLinkLabel = null;
+        private static readonly string DocDir = Path.Combine(Environment.CurrentDirectory, "Documentos");
+        private static readonly string MpoDir = Path.Combine(DocDir, "MPO");
+        private static readonly string DiagramasDir = Path.Combine(DocDir, "Diagramas");
+        private static readonly string MopDir = Path.Combine(DocDir, "MPO", "MOP");
+
+        private static LinkLabel StatusOutputLinkLabel = null;
 
         public WebScrap(LinkLabel linkLabel)
         {
-            statusOutputLinkLabel = linkLabel;
+            StatusOutputLinkLabel = linkLabel;
         }
         private static CookieContainer cookieContainer = new CookieContainer();
 
@@ -53,8 +59,9 @@ namespace SOS
         }
 
 
-        public void UpdateDocuments() //problema diagrama após mpo
+        public void UpdateDocuments() 
         {
+            LoadBookmarks();
             UpdateMPO();
             UpdateDiagramasONS();
         }
@@ -64,30 +71,47 @@ namespace SOS
         static void LogUpdate(string report, bool display = false)
         {
             string LogText = $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: {report}";
-            using (StreamWriter outfile = new StreamWriter($"{Environment.CurrentDirectory}/Documentos/log.txt", AppendLog))
+            using (StreamWriter outfile = new StreamWriter(Path.Combine(DocDir, "log.txt"), AppendLog))
             {
                 outfile.WriteLine(LogText);
             }
             AppendLog = true;
             report = report.Length > 100 ? $"{report.Substring(0, 100)}..." : report;
-            if (display) statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => statusOutputLinkLabel.Text = $"Atualização de documentos: {report}");
+            if (display) StatusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => StatusOutputLinkLabel.Text = $"Atualização de documentos: {report}");
         }
         private static bool AppendLog = false;
 
         #endregion
 
         #region Indexing methods
-        private static IEnumerable<Bookmark> GetPdfBookmark(FileInfo docFile)
+        private static HashSet<ModelSearchBookmark> LocalBookmarks;
+        private static FileInfo jsonBookmarkFile = new FileInfo(Path.Combine(DocDir, "bookmarks.json"));
+        private static void LoadBookmarks()
         {
+            //PM.SE.3SP NUMERO 1239 para testes
+            string bookmarkInfo = File.Exists(jsonBookmarkFile.FullName) ? File.ReadAllText(jsonBookmarkFile.FullName) : null;
+            try
+            {
+                LocalBookmarks = JsonConvert.DeserializeObject<HashSet<ModelSearchBookmark>>(bookmarkInfo);
+            }
+            catch (Exception)
+            {
+            }
+        }
+        private static IEnumerable<Bookmark> GetPdfBookmark(FileInfo docFile, bool diagrama = false)
+        {
+            var listBookmarks = new List<Bookmark>
+            {
+                new Bookmark //default primeiro bookmark é o nome do próprio documento
+                {
+                    Title = docFile.Name,
+                    PathAndPage = $"{docFile.FullName}#page=1"
+                }
+            };
+            if (diagrama) return listBookmarks;
+
             PdfReader reader = new PdfReader(docFile.FullName);
             IList<Dictionary<string, object>> bookmarks = SimpleBookmark.GetBookmark(reader);
-            var listBookmarks = new List<Bookmark>();
-            //default primeiro bookmark é o nome do próprio documento
-            listBookmarks.Add(new Bookmark
-            {
-                Title = docFile.Name,
-                PathAndPage = $"{docFile.FullName}#page=1"
-            });
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 SimpleBookmark.ExportToXML(bookmarks, memoryStream, "ISO8859-1", true);
@@ -117,25 +141,20 @@ namespace SOS
             IEnumerable<ChildItem> docsMPO = ScrapMPOAsync(null).GetAwaiter().GetResult();
             int totalItems = docsMPO.Count();
             int counter = 1;
-            FileInfo jsonInfoFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/info.json");
-            FileInfo jsonBookmarkFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/bookmarks.json");
-
-            if (!jsonInfoFile.Directory.Exists) Directory.CreateDirectory(jsonInfoFile.Directory.FullName); //primeira execução do programa
+              
+            FileInfo jsonInfoFile = new FileInfo(Path.Combine(MpoDir, "info.json"));
 
             string jsonInfo = File.Exists(jsonInfoFile.FullName) ? File.ReadAllText(jsonInfoFile.FullName) : null;
-            string bookmarkInfo = File.Exists(jsonBookmarkFile.FullName) ? File.ReadAllText(jsonBookmarkFile.FullName) : null;
 
             var localDocsMPO = new List<ChildItem>();
-            var localBookmarks = new List<ModelSearchBookmark>();
             try //problema ao corromper gravação do json //parse arquivo json inválido
             {
                 localDocsMPO = JsonConvert.DeserializeObject<List<ChildItem>>(jsonInfo); 
-                localBookmarks = JsonConvert.DeserializeObject<List<ModelSearchBookmark>>(bookmarkInfo);
             }
             catch (Exception)
             {                
             }
-            if (localBookmarks.Count == 0) localDocsMPO = new List<ChildItem>(); //forçar update completo caso bookmark corrompido
+            if (LocalBookmarks.Count == 0) localDocsMPO = new List<ChildItem>(); //forçar update completo caso bookmark corrompido
 
             bool bookmarkUpdate = false;
             var client = new WebClient();
@@ -143,7 +162,7 @@ namespace SOS
             {
                 LogUpdate($"{doc.MpoCodigo} atualizando {counter++} de {totalItems}", true);
                 string docLink = $"http://ons.org.br{doc.FileRef}";
-                FileInfo docFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/{doc.MpoCodigo}.pdf");
+                FileInfo docFile = new FileInfo(Path.Combine(MpoDir, $"{doc.MpoCodigo}.pdf"));
 
                 string revisao = localDocsMPO.Where(w => w.MpoCodigo == doc.MpoCodigo).Select(s => s._Revision).FirstOrDefault();
                 if (revisao == doc._Revision && docFile.Exists)
@@ -157,16 +176,16 @@ namespace SOS
                     //Collection of bookmarks
                     bookmarkUpdate = true;
                     var listBookmarks = GetPdfBookmark(docFile);
-                    if (localBookmarks.Any(w => w.MpoCodigo == doc.MpoCodigo))
+                    if (LocalBookmarks.Any(w => w.MpoCodigo == doc.MpoCodigo))
                     {
-                        foreach (var item in localBookmarks)
+                        foreach (var item in LocalBookmarks)
                         {
                             if (item.MpoCodigo == doc.MpoCodigo) item.Bookmarks = listBookmarks;
                         }
                     }
                     else
                     {
-                        localBookmarks.Add(new ModelSearchBookmark
+                        LocalBookmarks.Add(new ModelSearchBookmark
                         {
                             MpoCodigo = doc.MpoCodigo,
                             Bookmarks = listBookmarks
@@ -181,14 +200,12 @@ namespace SOS
             }
             if (bookmarkUpdate)
             {
-                File.WriteAllText(jsonBookmarkFile.FullName, JsonConvert.SerializeObject(localBookmarks));
+                File.WriteAllText(jsonBookmarkFile.FullName, JsonConvert.SerializeObject(LocalBookmarks));
             }
 
             var mopLinks = docsMPO.Where(w => w.MpoMopsLink != null).SelectMany(s => s.MpoMopsLink).Distinct();                
-            string mopDir = $"{Environment.CurrentDirectory}/Documentos/MPO/MOP";
-            if (!Directory.Exists(mopDir)) Directory.CreateDirectory(mopDir);                      
-            var mopsVigentes = mopLinks.Select(s => $"{mopDir}\\{s.Split('/').Last()}");
-            var mopsLocal = Directory.GetFiles(mopDir, "*.pdf").Except(mopsVigentes);
+            var mopsVigentes = mopLinks.Select(s => Path.Combine(MopDir, s.Split('/').Last()));
+            var mopsLocal = Directory.GetFiles(MopDir, "*.pdf").Except(mopsVigentes);
             foreach (var item in mopsLocal)
             {
                 File.Delete(item);
@@ -198,7 +215,7 @@ namespace SOS
             counter = 1;
             foreach (var mopLink in mopLinks)
             {
-                FileInfo mopFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/MOP/{mopLink.Split('/').Last()}");
+                FileInfo mopFile = new FileInfo(Path.Combine(MopDir, mopLink.Split('/').Last()));
                 LogUpdate($"{mopFile.Name} atualizando {counter++} de {totalItems}", true);
                 if (mopFile.Exists)
                 {
@@ -284,27 +301,28 @@ namespace SOS
             IEnumerable<Row> diagramasONS = ScrapOnsDiagramasAsync("fsaolive", "123123aA").GetAwaiter().GetResult();
             int totalItems = diagramasONS.Count();
             int counter = 1;
-            FileInfo jsonInfoFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/Diagramas/info.json");
-            if (!jsonInfoFile.Directory.Exists) Directory.CreateDirectory(jsonInfoFile.Directory.FullName); //primeiro acesso
-
+            FileInfo jsonInfoFile = new FileInfo(Path.Combine(DiagramasDir, "info.json"));
+           
             string jsonInfo = File.Exists(jsonInfoFile.FullName) ? File.ReadAllText(jsonInfoFile.FullName) : null;
-            IEnumerable<Row>localDiagramas = new List<Row>();
-            try //obrigatório; caso json esteja corrompido; parse não causa exception para entrada inválida
+
+            IEnumerable<Row> localDiagramas = new List<Row>();
+            try //problema ao corromper gravação do json //parse arquivo json inválido
             {
                 localDiagramas = JsonConvert.DeserializeObject<IEnumerable<Row>>(jsonInfo);
             }
             catch (Exception)
-            {                
+            {
             }
+            if (LocalBookmarks.Count == 0) localDiagramas = new List<Row>(); //forçar update completo caso bookmark corrompido
 
+            bool bookmarkUpdate = false;
             var client = new CookieAwareWebClient();
-
             foreach (var diagrama in diagramasONS)
             {
                 LogUpdate($"{diagrama.FileLeafRef} atualizando {counter++} de {totalItems}", true);
                 string diagramaLink = $"https://cdre.ons.org.br{diagrama.FileRef}";
 
-                FileInfo diagramaFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/Diagramas/{diagrama.FileLeafRef}");
+                FileInfo diagramaFile = new FileInfo(Path.Combine(DiagramasDir, diagrama.FileLeafRef));
 
                 string revisao = localDiagramas.Where(w => w.FileLeafRef == diagrama.FileLeafRef).Select(s => s.Modified).FirstOrDefault();
                 if (revisao == diagrama.Modified && diagramaFile.Exists)
@@ -315,12 +333,33 @@ namespace SOS
                 try
                 {
                     client.DownloadFile(diagramaLink, diagramaFile.FullName);
+                    bookmarkUpdate = true;
+                    var listBookmarks = GetPdfBookmark(diagramaFile, true);
+                    if (LocalBookmarks.Any(w => w.MpoCodigo == diagrama.FileLeafRef))
+                    {
+                        foreach (var item in LocalBookmarks)
+                        {
+                            if (item.MpoCodigo == diagrama.FileLeafRef) item.Bookmarks = listBookmarks;
+                        }
+                    }
+                    else
+                    {
+                        LocalBookmarks.Add(new ModelSearchBookmark
+                        {
+                            MpoCodigo = diagrama.FileLeafRef,
+                            Bookmarks = listBookmarks
+                        });
+                    }
                     LogUpdate($"{diagrama.FileLeafRef} atualizado da modificação {revisao} para modificação {diagrama.Modified} em {diagramaFile.FullName}");
                 }
                 catch (Exception)
                 {
                     LogUpdate($"{diagrama.FileLeafRef} não foi possível atualização pelo link {diagramaLink}");
                 }
+            }
+            if (bookmarkUpdate)
+            {
+                File.WriteAllText(jsonBookmarkFile.FullName, JsonConvert.SerializeObject(LocalBookmarks));
             }
             var diagramasVigentes = diagramasONS.Select(s => $"{jsonInfoFile.Directory.FullName}\\{s.FileLeafRef}");
             var diagramasLocal = Directory.GetFiles(jsonInfoFile.Directory.FullName, "*.pdf").Except(diagramasVigentes);

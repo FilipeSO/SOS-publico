@@ -24,6 +24,8 @@ namespace SOS
         // Default to a small increment:
         private const double ZoomIncrement = 0.10;
         private const string DefaultUrlForAddedTabs = "https://www.google.com";
+        private string[] DocumentDirectories = new string[] { Path.Combine(Environment.CurrentDirectory, "Documentos","MPO"), Path.Combine(Environment.CurrentDirectory, "Documentos", "MPO", "MOP"), Path.Combine(Environment.CurrentDirectory, "Documentos", "Diagramas") };
+
         private bool multiThreadedMessageLoopEnabled;
 
         public BrowserInterface(bool multiThreadedMessageLoopEnabled)
@@ -33,23 +35,29 @@ namespace SOS
             var bitness = Environment.Is64BitProcess ? "x64" : "x86";
             Text = "SOS - " + bitness;
             WindowState = FormWindowState.Maximized;
+            foreach (var dir in DocumentDirectories)
+            {
+                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            }
+
             Load += BrowserInterface_Load;
             //Only perform layout when control has completly finished resizing
             ResizeBegin += (s, e) => SuspendLayout();
             ResizeEnd += (s, e) => ResumeLayout(true);
-
             this.multiThreadedMessageLoopEnabled = multiThreadedMessageLoopEnabled;            
         }
 
         private void BrowserInterface_Load(object sender, EventArgs e)
         {
-            splitContainer1.SplitterDistance = 500;
+            splitContainer1.SplitterDistance = 400;
             FileInfo pdfFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/AO-AJ.SE.UHAT.pdf");
             AddTab($"{pdfFile.FullName}#page=5");
             LoadBookmarks();
             LoadDefaultTreeview();
             UpdateStart();
         }
+
+        #region Search methods
 
         //private void SearchBookmarksDataGrid()
         //{
@@ -108,8 +116,16 @@ namespace SOS
         private void LoadDefaultTreeview()
         {
             treeViewSearch.BeginUpdate();
-            ListDirectory(treeViewSearch, $"{Environment.CurrentDirectory}/Documentos");
-            treeviewStatusLabel.Text = $"Estão vigentes {treeViewSearch.GetNodeCount(true)} diagramas e documentos";
+            DirectoryInfo docDir = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "Documentos"));
+            if (docDir.Exists)
+            {
+                ListDirectory(treeViewSearch, docDir.FullName);
+                treeviewStatusLabel.Text = $"Estão vigentes {treeViewSearch.GetNodeCount(true)} diagramas e documentos";
+            }
+            else
+            {
+                SearchBookmarkPanelEnabled(false);
+            }
             treeViewSearch.EndUpdate();
         }
 
@@ -133,8 +149,7 @@ namespace SOS
             return directoryNode;
         }
 
-        //private HashSet<TreeNode> DefaultDirectoryNodes;
-        private HashSet<ModelSearchBookmark> localBookmarks;
+        private HashSet<ModelSearchBookmark> LocalBookmarks;
         private void LoadBookmarks()
         {
             //PM.SE.3SP NUMERO 1239 para testes
@@ -150,7 +165,7 @@ namespace SOS
             }
             try
             {
-                localBookmarks = JsonConvert.DeserializeObject<HashSet<ModelSearchBookmark>>(bookmarkInfo);
+                LocalBookmarks = JsonConvert.DeserializeObject<HashSet<ModelSearchBookmark>>(bookmarkInfo);
             }
             catch (Exception)
             {
@@ -168,7 +183,7 @@ namespace SOS
 
         private void SearchBookmarks()
         {
-            if (localBookmarks == null) return;
+            if (LocalBookmarks == null) return;
             string searchText = $"{txtBookmarkSearch.Text.Trim()}";
 
             if (searchText.Length == 0)
@@ -186,7 +201,7 @@ namespace SOS
             {
                 IEnumerable<string> keyWords = RemoveDiacriticsAndSpecialCharactersToLower(searchText).Split(' ').Where(w => !string.IsNullOrWhiteSpace(w));
                 var treeNodeResults = new List<TreeNode>();
-                Parallel.ForEach(localBookmarks, doc =>
+                Parallel.ForEach(LocalBookmarks, doc =>
                 {
                     var docNode = new TreeNode { Text = doc.MpoCodigo };
                     foreach (var bookmark in doc.Bookmarks)
@@ -248,8 +263,8 @@ namespace SOS
         }
         private string RemoveDiacriticsAndSpecialCharactersToLower(string text)
         {
-            byte[]  tempBytes = System.Text.Encoding.GetEncoding("ISO-8859-8").GetBytes(text.ToLower());
-            string str = System.Text.Encoding.UTF8.GetString(tempBytes);
+            byte[]  tempBytes = Encoding.GetEncoding("ISO-8859-8").GetBytes(text.ToLower());
+            string str = Encoding.UTF8.GetString(tempBytes);
             StringBuilder sb = new StringBuilder();
             foreach (char c in str)
             {
@@ -314,6 +329,7 @@ namespace SOS
             //    e.Graphics.DrawString(e.Node.Tag.ToString(), font, Brushes.Black, e.Bounds.Right, e.Bounds.Top);
             //}
         }
+        #endregion
 
         #region Update methods
         private void UpdateStart()
@@ -330,7 +346,7 @@ namespace SOS
                 {
                     webScrap.UpdateDocuments();
                     statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => {
-                        statusOutputLinkLabel.Links.Add("MM/dd/yyyy HH:mm:ss: Atualização concluída. Cheque o histórico de atualização clicando ".Length, "aqui".Length, $"{Environment.CurrentDirectory}/Documentos/log.txt");
+                        statusOutputLinkLabel.Links.Add("MM/dd/yyyy HH:mm:ss: Atualização concluída. Cheque o histórico de atualização clicando ".Length, "aqui".Length, Path.Combine(Environment.CurrentDirectory, "Documentos", "log.txt"));
                         statusOutputLinkLabel.Text = $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: Atualização concluída. Cheque o histórico de atualização clicando aqui";
                         statusOutputLinkLabel.Enabled = true;
                         updateStartToolStripMenuItem.Enabled = true;
@@ -342,7 +358,7 @@ namespace SOS
             catch (Exception ex)
             {
                 statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => statusOutputLinkLabel.Text = $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: Não foi possível concluir a atualização de documentos. Cheque se está conectado à Intranet e Internet. Caso o problema persista comunique o administrador da aplicação");
-                File.WriteAllText($"{Environment.CurrentDirectory}/Documentos/crash_report.txt", $"Data: {ex.Data}{Environment.NewLine}Source:{ex.Source}{Environment.NewLine}StackTrace:{ex.StackTrace}{Environment.NewLine}TargetSite:{ex.TargetSite}{Environment.NewLine}InnerExceptionMessage:{ex.InnerException.Message}{Environment.NewLine}ExceptionMessage{ex.Message}{Environment.NewLine}{Environment.NewLine}");
+                File.WriteAllText(Path.Combine(Environment.CurrentDirectory, "Documentos", "crash_report.txt"), $"Data: {ex.Data}{Environment.NewLine}Source:{ex.Source}{Environment.NewLine}StackTrace:{ex.StackTrace}{Environment.NewLine}TargetSite:{ex.TargetSite}{Environment.NewLine}InnerExceptionMessage:{ex.InnerException.Message}{Environment.NewLine}ExceptionMessage{ex.Message}{Environment.NewLine}{Environment.NewLine}");
             }
         }
         private void StatusOutputLinkLabelClick(object sender, LinkLabelLinkClickedEventArgs e)
@@ -486,6 +502,10 @@ namespace SOS
         #endregion
 
         #region MenuStrip click methods
+        private void VisualHistoricoItemClick(object sender, EventArgs e)
+        {
+            AddTab(Path.Combine(Environment.CurrentDirectory, "Documentos", "log.txt"));
+        }
         private void ExitMenuItemClick(object sender, EventArgs e)
         {
             ExitApplication();

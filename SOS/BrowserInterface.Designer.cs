@@ -64,6 +64,7 @@
             this.treeviewStatusLabel = new System.Windows.Forms.Label();
             this.btnSearch = new System.Windows.Forms.Button();
             this.txtBookmarkSearch = new System.Windows.Forms.TextBox();
+            this.visualizarHistóricoDeAtualizaçãoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.browserTabControl.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -125,7 +126,7 @@
             // 
             this.printToPdfToolStripMenuItem.Name = "printToPdfToolStripMenuItem";
             this.printToPdfToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.printToPdfToolStripMenuItem.Text = "Imprimir como PDF";
+            this.printToPdfToolStripMenuItem.Text = "Salvar como PDF";
             this.printToPdfToolStripMenuItem.Click += new System.EventHandler(this.PrintToPdfToolStripMenuItemClick);
             // 
             // toolStripMenuItem3
@@ -227,6 +228,7 @@
             this.exibirFerramentasToolStripMenuItem,
             this.toolStripSeparator4,
             this.updateStartToolStripMenuItem,
+            this.visualizarHistóricoDeAtualizaçãoToolStripMenuItem,
             this.toolStripSeparator1,
             this.aboutToolStripMenuItem});
             this.configuraçõesToolStripMenuItem.Name = "configuraçõesToolStripMenuItem";
@@ -383,6 +385,13 @@
             this.txtBookmarkSearch.TabIndex = 0;
             this.txtBookmarkSearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.TxtBookmarkSearchKeyDown);
             // 
+            // visualizarHistóricoDeAtualizaçãoToolStripMenuItem
+            // 
+            this.visualizarHistóricoDeAtualizaçãoToolStripMenuItem.Name = "visualizarHistóricoDeAtualizaçãoToolStripMenuItem";
+            this.visualizarHistóricoDeAtualizaçãoToolStripMenuItem.Size = new System.Drawing.Size(321, 22);
+            this.visualizarHistóricoDeAtualizaçãoToolStripMenuItem.Text = "Visualizar histórico de atualização";
+            this.visualizarHistóricoDeAtualizaçãoToolStripMenuItem.Click += new System.EventHandler(this.VisualHistoricoItemClick);
+            // 
             // BrowserInterface
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -443,6 +452,7 @@
         private System.Windows.Forms.TextBox txtBookmarkSearch;
         private System.Windows.Forms.TreeView treeViewSearch;
         private System.Windows.Forms.Label treeviewStatusLabel;
+        private System.Windows.Forms.ToolStripMenuItem visualizarHistóricoDeAtualizaçãoToolStripMenuItem;
     }
 }
 

@@ -37,11 +37,11 @@ namespace SOS
             //    browserProcessHandler = new WinFormsBrowserProcessHandler(scheduler);
             //}
 
-            var settings = new CefSettings
-            {
-                MultiThreadedMessageLoop = multiThreadedMessageLoop,
-                ExternalMessagePump = !multiThreadedMessageLoop
-            };
+            //var settings = new CefSettings
+            //{
+            //    MultiThreadedMessageLoop = multiThreadedMessageLoop,
+            //    ExternalMessagePump = !multiThreadedMessageLoop
+            //};
 
 
             Application.EnableVisualStyles();
