@@ -66,7 +66,7 @@ namespace SOS
             UpdateDiagramasONS();
         }
 
-        #region logging methods
+        #region Logging methods
 
         static void LogUpdate(string report, bool display = false)
         {
@@ -98,17 +98,32 @@ namespace SOS
             {
             }
         }
-        private static IEnumerable<Bookmark> GetPdfBookmark(FileInfo docFile, bool diagrama = false)
+        private static IEnumerable<Bookmark> GetPdfBookmark(FileInfo docFile, bool diagrama = false, string tituloDiagrama = null)
         {
-            var listBookmarks = new List<Bookmark>
+            var listBookmarks = new List<Bookmark>();
+            //listBookmarks.Add(new Bookmark //default primeiro bookmark é o nome do próprio documento
+            //{
+            //    Title = docFile.Name,
+            //    PathAndPage = $"{docFile.FullName}"
+            //});
+            //if (diagrama) return listBookmarks;
+            if (diagrama)
             {
-                new Bookmark //default primeiro bookmark é o nome do próprio documento
+                listBookmarks.Add(new Bookmark //default primeiro bookmark é o nome do próprio documento
+                {
+                    Title = tituloDiagrama,
+                    PathAndPage = $"{docFile.FullName}"
+                });
+                return listBookmarks;
+            }
+            else
+            {
+                listBookmarks.Add(new Bookmark //default primeiro bookmark é o nome do próprio documento
                 {
                     Title = docFile.Name,
-                    PathAndPage = $"{docFile.FullName}#page=1"
-                }
-            };
-            if (diagrama) return listBookmarks;
+                    PathAndPage = $"{docFile.FullName}"
+                });
+            }
 
             PdfReader reader = new PdfReader(docFile.FullName);
             IList<Dictionary<string, object>> bookmarks = SimpleBookmark.GetBookmark(reader);
