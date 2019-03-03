@@ -24,7 +24,7 @@ namespace SOS
         // Default to a small increment:
         private const double ZoomIncrement = 0.10;
         private const string DefaultUrlForAddedTabs = "https://www.google.com";
-        private string[] DocumentDirectories = new string[] { Path.Combine(Environment.CurrentDirectory, "Documentos","MPO"), Path.Combine(Environment.CurrentDirectory, "Documentos", "MPO", "MOP"), Path.Combine(Environment.CurrentDirectory, "Documentos", "Diagramas") };
+        private string[] DocumentDirectories = new string[] { Path.Combine(Environment.CurrentDirectory, "Documentos", "MPO"), Path.Combine(Environment.CurrentDirectory, "Documentos", "MPO", "MOP"), Path.Combine(Environment.CurrentDirectory, "Documentos", "Diagramas") };
 
         private bool multiThreadedMessageLoopEnabled;
 
@@ -44,7 +44,7 @@ namespace SOS
             //Only perform layout when control has completly finished resizing
             ResizeBegin += (s, e) => SuspendLayout();
             ResizeEnd += (s, e) => ResumeLayout(true);
-            this.multiThreadedMessageLoopEnabled = multiThreadedMessageLoopEnabled;            
+            this.multiThreadedMessageLoopEnabled = multiThreadedMessageLoopEnabled;
         }
 
         private void BrowserInterface_Load(object sender, EventArgs e)
@@ -145,7 +145,7 @@ namespace SOS
             foreach (var directory in directoryInfo.GetDirectories())
                 directoryNode.Nodes.Add(CreateDirectoryNode(directory));
             foreach (var file in directoryInfo.GetFiles())
-                if(!file.Name.EndsWith(".txt") && !file.Name.EndsWith(".json")) directoryNode.Nodes.Add(new TreeNode{ Text = file.Name, Tag=file.FullName });
+                if (!file.Name.EndsWith(".txt") && !file.Name.EndsWith(".json")) directoryNode.Nodes.Add(new TreeNode { Text = file.Name, Tag = file.FullName });
             return directoryNode;
         }
 
@@ -205,7 +205,7 @@ namespace SOS
                 {
                     var docNode = new TreeNode { Text = doc.MpoCodigo };
                     foreach (var bookmark in doc.Bookmarks)
-                    {                
+                    {
                         int matchCheck = 0;
                         string title = RemoveDiacriticsAndSpecialCharactersToLower(bookmark.Title);
                         foreach (var key in keyWords)
@@ -213,7 +213,7 @@ namespace SOS
                             if (title.IndexOf(key) > -1) matchCheck++;
                         }
                         if (matchCheck == keyWords.Count())
-                        {                    
+                        {
                             title = bookmark.Title.Length > 70 ? $"{bookmark.Title.Substring(0, 70)}..." : bookmark.Title;
                             docNode.Nodes.Add(new TreeNode { Text = $"{title}", Tag = $"{bookmark.PathAndPage}", ToolTipText = bookmark.Title });
                         }
@@ -263,7 +263,7 @@ namespace SOS
         }
         private string RemoveDiacriticsAndSpecialCharactersToLower(string text)
         {
-            byte[]  tempBytes = Encoding.GetEncoding("ISO-8859-8").GetBytes(text.ToLower());
+            byte[] tempBytes = Encoding.GetEncoding("ISO-8859-8").GetBytes(text.ToLower());
             string str = Encoding.UTF8.GetString(tempBytes);
             StringBuilder sb = new StringBuilder();
             foreach (char c in str)
@@ -280,8 +280,8 @@ namespace SOS
             }
             return sb.ToString();
         }
-        
-        private string TreenodeTextToFit(string nodeText, int length) 
+
+        private string TreenodeTextToFit(string nodeText, int length)
         {
             //treeview não aceita newline; tive problema para definir os bounds do texto após o fit
             //TODO drawmode treeview para multiple line
@@ -340,12 +340,14 @@ namespace SOS
             statusOutputLinkLabel.Visible = true;
             statusOutputLinkLabel.Enabled = false;
             statusOutputLinkLabel.Links.Clear();
-            try
+
+            Task.Run(() =>
             {
-                Task.Run(() =>
+                try
                 {
                     webScrap.UpdateDocuments();
-                    statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => {
+                    statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() =>
+                    {
                         statusOutputLinkLabel.Links.Add("MM/dd/yyyy HH:mm:ss: Atualização concluída. Cheque o histórico de atualização clicando ".Length, "aqui".Length, Path.Combine(Environment.CurrentDirectory, "Documentos", "log.txt"));
                         statusOutputLinkLabel.Text = $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: Atualização concluída. Cheque o histórico de atualização clicando aqui";
                         statusOutputLinkLabel.Enabled = true;
@@ -353,13 +355,14 @@ namespace SOS
                         LoadBookmarks();
                         LoadDefaultTreeview();
                     });
-                });
-            }
-            catch (Exception ex)
-            {
-                statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => statusOutputLinkLabel.Text = $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: Não foi possível concluir a atualização de documentos. Cheque se está conectado à Intranet e Internet. Caso o problema persista comunique o administrador da aplicação");
-                File.WriteAllText(Path.Combine(Environment.CurrentDirectory, "Documentos", "crash_report.txt"), $"Data: {ex.Data}{Environment.NewLine}Source:{ex.Source}{Environment.NewLine}StackTrace:{ex.StackTrace}{Environment.NewLine}TargetSite:{ex.TargetSite}{Environment.NewLine}InnerExceptionMessage:{ex.InnerException.Message}{Environment.NewLine}ExceptionMessage{ex.Message}{Environment.NewLine}{Environment.NewLine}");
-            }
+                }
+                catch (Exception ex)
+                {
+                    statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => statusOutputLinkLabel.Text = $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: Não foi possível concluir a atualização de documentos. Cheque se está conectado à Intranet e Internet. Caso o problema persista comunique o administrador da aplicação");
+                    File.WriteAllText(Path.Combine(Environment.CurrentDirectory, "Documentos", "crash_report.txt"), $"Data: {ex.Data}{Environment.NewLine}Source:{ex.Source}{Environment.NewLine}StackTrace:{ex.StackTrace}{Environment.NewLine}TargetSite:{ex.TargetSite}{Environment.NewLine}InnerExceptionMessage:{ex.InnerException.Message}{Environment.NewLine}ExceptionMessage:{ex.Message}{Environment.NewLine}");
+                }
+            });
+
         }
         private void StatusOutputLinkLabelClick(object sender, LinkLabelLinkClickedEventArgs e)
         {
@@ -393,7 +396,7 @@ namespace SOS
                 else
                     e.Graphics.FillRectangle(new SolidBrush(Color.White), e.Bounds);
 
-                if (e.Index == browserTabControl.TabCount-1)
+                if (e.Index == browserTabControl.TabCount - 1)
                 {
                     e.Graphics.DrawString("+", new Font("Arial", 8, FontStyle.Bold), Brushes.Black, e.Bounds.Right - 25, e.Bounds.Top + 4);
                     browserTabControl.TabPages[e.Index].Width = 18;
@@ -403,7 +406,7 @@ namespace SOS
                     e.Graphics.DrawString("x", new Font("Arial", 8, FontStyle.Bold), Brushes.Black, e.Bounds.Right - 15, e.Bounds.Top + 4);
                     e.Graphics.DrawString(browserTabControl.TabPages[e.Index].Text, e.Font, Brushes.Black, e.Bounds.Left + 5, e.Bounds.Top + 4);
                 }
-                e.DrawFocusRectangle();               
+                e.DrawFocusRectangle();
             }
             catch (Exception)
             {
@@ -433,7 +436,7 @@ namespace SOS
 
         private void BrowserTabSelectedIndexChanged(object sender, EventArgs e)
         {
-            if(browserTabControl.SelectedIndex == browserTabControl.TabCount-1)
+            if (browserTabControl.SelectedIndex == browserTabControl.TabCount - 1)
             {
                 AddTab(DefaultUrlForAddedTabs);
             }
@@ -486,7 +489,7 @@ namespace SOS
             if (insertIndex == null)
             {
                 //browserTabControl.TabPages.Add(tabPage);
-                browserTabControl.TabPages.Insert(browserTabControl.TabCount-1,tabPage);
+                browserTabControl.TabPages.Insert(browserTabControl.TabCount - 1, tabPage);
 
             }
             else
@@ -554,7 +557,7 @@ namespace SOS
             if (control != null)
             {
                 exibirMensagensDeDownloadToolStripMenuItem.Checked = !control.downloadOutputLabel.Visible;
-                control.downloadOutputLabel.Visible = !control.downloadOutputLabel.Visible;                
+                control.downloadOutputLabel.Visible = !control.downloadOutputLabel.Visible;
             }
         }
         private void DisplayOutputMessagesItemClick(object sender, EventArgs e)
@@ -584,10 +587,10 @@ namespace SOS
         //        control.CopySourceToClipBoardAsync();
         //    }
         //}
-        
+
         private void NewTabToolStripMenuItemClick(object sender, EventArgs e)
         {
-            AddTab(DefaultUrlForAddedTabs);            
+            AddTab(DefaultUrlForAddedTabs);
         }
 
         private void RemoveSelectedTab()
@@ -611,7 +614,7 @@ namespace SOS
 
             tabPage.Dispose();
 
-            browserTabControl.SelectedIndex = currentIndex > 1 ? currentIndex -1 : 0;
+            browserTabControl.SelectedIndex = currentIndex > 1 ? currentIndex - 1 : 0;
 
             if (browserTabControl.TabPages.Count == 0)
             {

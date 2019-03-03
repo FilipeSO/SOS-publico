@@ -111,7 +111,7 @@ namespace SOS
             {
                 listBookmarks.Add(new Bookmark //default primeiro bookmark é o nome do próprio documento
                 {
-                    Title = tituloDiagrama,
+                    Title = tituloDiagrama.ToLower().IndexOf("diagrama")>-1 ? tituloDiagrama : $"Diagrama {tituloDiagrama}",
                     PathAndPage = $"{docFile.FullName}"
                 });
                 return listBookmarks;
@@ -349,7 +349,7 @@ namespace SOS
                 {
                     client.DownloadFile(diagramaLink, diagramaFile.FullName);
                     bookmarkUpdate = true;
-                    var listBookmarks = GetPdfBookmark(diagramaFile, true);
+                    var listBookmarks = GetPdfBookmark(diagramaFile, true, diagrama.MpoAssunto);
                     if (LocalBookmarks.Any(w => w.MpoCodigo == diagrama.FileLeafRef))
                     {
                         foreach (var item in LocalBookmarks)
