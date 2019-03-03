@@ -54,6 +54,7 @@
             this.exibirFerramentasToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.updateStartToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.visualizarHistóricoDeAtualizaçãoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.browserTabControl = new System.Windows.Forms.TabControl();
@@ -64,7 +65,6 @@
             this.treeviewStatusLabel = new System.Windows.Forms.Label();
             this.btnSearch = new System.Windows.Forms.Button();
             this.txtBookmarkSearch = new System.Windows.Forms.TextBox();
-            this.visualizarHistóricoDeAtualizaçãoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.browserTabControl.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -275,6 +275,13 @@
             this.updateStartToolStripMenuItem.Text = "Iniciar atualização de documentos";
             this.updateStartToolStripMenuItem.Click += new System.EventHandler(this.UpdateStartItemClick);
             // 
+            // visualizarHistóricoDeAtualizaçãoToolStripMenuItem
+            // 
+            this.visualizarHistóricoDeAtualizaçãoToolStripMenuItem.Name = "visualizarHistóricoDeAtualizaçãoToolStripMenuItem";
+            this.visualizarHistóricoDeAtualizaçãoToolStripMenuItem.Size = new System.Drawing.Size(321, 22);
+            this.visualizarHistóricoDeAtualizaçãoToolStripMenuItem.Text = "Visualizar histórico de atualização";
+            this.visualizarHistóricoDeAtualizaçãoToolStripMenuItem.Click += new System.EventHandler(this.VisualHistoricoItemClick);
+            // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
@@ -384,13 +391,6 @@
             this.txtBookmarkSearch.Size = new System.Drawing.Size(243, 20);
             this.txtBookmarkSearch.TabIndex = 0;
             this.txtBookmarkSearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.TxtBookmarkSearchKeyDown);
-            // 
-            // visualizarHistóricoDeAtualizaçãoToolStripMenuItem
-            // 
-            this.visualizarHistóricoDeAtualizaçãoToolStripMenuItem.Name = "visualizarHistóricoDeAtualizaçãoToolStripMenuItem";
-            this.visualizarHistóricoDeAtualizaçãoToolStripMenuItem.Size = new System.Drawing.Size(321, 22);
-            this.visualizarHistóricoDeAtualizaçãoToolStripMenuItem.Text = "Visualizar histórico de atualização";
-            this.visualizarHistóricoDeAtualizaçãoToolStripMenuItem.Click += new System.EventHandler(this.VisualHistoricoItemClick);
             // 
             // BrowserInterface
             // 

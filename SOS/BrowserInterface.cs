@@ -54,7 +54,7 @@ namespace SOS
             AddTab($"{pdfFile.FullName}#page=5");
             LoadBookmarks();
             LoadDefaultTreeview();
-            UpdateStart();
+            //UpdateStart();
         }
 
         #region Search methods
@@ -215,10 +215,11 @@ namespace SOS
                         if (matchCheck == keyWords.Count())
                         {
                             title = bookmark.Title.Length > 70 ? $"{bookmark.Title.Substring(0, 70)}..." : bookmark.Title;
-                            docNode.Nodes.Add(new TreeNode { Text = $"{title}", Tag = $"{bookmark.PathAndPage}", ToolTipText = bookmark.Title });
+                            TreeNode treenode = new TreeNode { Text = $"{title}", Tag = $"{bookmark.PathAndPage}", ToolTipText = bookmark.Title };
+                            docNode.Nodes.Add(treenode);
                         }
-                    }
-                    if (docNode.Nodes.Count > 0) treeNodeResults.Add(docNode);
+                    }                   
+                    if (docNode.Nodes.Count > 0) lock (treeNodeResults)treeNodeResults.Add(docNode);                
                 });
                 if (treeNodeResults.Count > 0) treeViewSearch.Nodes.AddRange(treeNodeResults.ToArray());
             }
