@@ -13,6 +13,8 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using SOS.Handlers;
 using CefSharp.WinForms.Internals;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace SOS
 {
@@ -22,8 +24,8 @@ namespace SOS
         private IntPtr browserHandle;
         private ChromeWidgetMessageInterceptor messageInterceptor;
         private bool multiThreadedMessageLoopEnabled;
-
-        public BrowserTabUserControl(Action<string, int?> openNewTab, string url, bool multiThreadedMessageLoopEnabled)
+        //public BrowserTabUserControl(Action<string, int?, string> openNewTab, string url, bool multiThreadedMessageLoopEnabled)
+        public BrowserTabUserControl(string url, bool multiThreadedMessageLoopEnabled)
         {
             InitializeComponent();
            
@@ -31,7 +33,7 @@ namespace SOS
             {
                 Dock = DockStyle.Fill
             };
-
+            
             browserPanel.Controls.Add(browser);
 
             Browser = browser;
@@ -96,11 +98,28 @@ namespace SOS
 
             //CefExample.RegisterTestResources(browser);    
         }
-        
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+
+        private void ShowRelatedDocuments(string url)
+        {
+            if (url.IndexOf(".pdf") == -1) return;
+            BrowserInterface form = ParentForm as BrowserInterface;
+            string relatedDocs = form.LocalDocsMPO.Where(w => w.MpoCodigo == Path.GetFileNameWithoutExtension(url)).Select(s => s.MpoAlteradosPelasMops).FirstOrDefault();
+            if (string.IsNullOrEmpty(relatedDocs)) return;
+            var chrome = browserPanel.Controls[0] as ChromiumWebBrowser;
+            string links = "";
+            foreach (var doc in relatedDocs.Split(','))
+            {
+                links += $"<a href=\"MOP/{doc.Replace('/','-')}.pdf\">{doc}</a>, ";
+            }
+            string script = @"
+            var embedNode = document.getElementsByTagName('embed')[0]
+            var node = document.createElement('div');    
+            node.innerHTML = 'Documentos relacionados: "+ links + @"'
+            document.getElementsByTagName('body')[0].insertBefore(node, embedNode)
+            document.body.style.backgroundColor = 'rgb(255, 255, 255)';";
+            chrome.ExecuteScriptAsyncWhenPageLoaded(script);    
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -120,6 +139,7 @@ namespace SOS
             base.Dispose(disposing);
         }
 
+        #region browser methods
         //private static void OnJavascriptEventArrived(string eventName, object eventData)
         //{
         //    switch (eventName)
@@ -168,7 +188,6 @@ namespace SOS
         {
             SetCanGoBack(args.CanGoBack);
             SetCanGoForward(args.CanGoForward);
-
             this.InvokeOnUiThreadIfRequired(() => SetIsLoading(args.IsLoading));
         }
 
@@ -184,6 +203,7 @@ namespace SOS
         private void OnBrowserAddressChanged(object sender, AddressChangedEventArgs args)
         {
             this.InvokeOnUiThreadIfRequired(() => urlTextBox.Text = args.Address);
+            ShowRelatedDocuments(args.Address);
         }
 
         private void SetCanGoBack(bool canGoBack)
@@ -306,8 +326,9 @@ namespace SOS
                 }
             }
         }
-        
-        //form controls
+        #endregion
+
+        #region Form controls
         private void DisplayOutput(string output)
         {
             this.InvokeOnUiThreadIfRequired(() => outputLabel.Text = output);
@@ -460,6 +481,6 @@ namespace SOS
         {
             ToggleBottomToolStrip();
         }
-
+        #endregion
     }
 }

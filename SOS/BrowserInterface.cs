@@ -53,8 +53,9 @@ namespace SOS
             FileInfo pdfFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/AO-AJ.SE.UHAT.pdf");
             AddTab($"{pdfFile.FullName}#page=5");
             LoadBookmarks();
+            LoadDocsMPO();
             LoadDefaultTreeview();
-            //UpdateStart();
+            UpdateStart();
         }
 
         #region Search methods
@@ -153,7 +154,7 @@ namespace SOS
         private void LoadBookmarks()
         {
             //PM.SE.3SP NUMERO 1239 para testes
-            FileInfo jsonBookmarkFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/bookmarks.json");
+            FileInfo jsonBookmarkFile = new FileInfo(Path.Combine(Environment.CurrentDirectory, "Documentos", "bookmarks.json"));
             string bookmarkInfo = File.Exists(jsonBookmarkFile.FullName) ? File.ReadAllText(jsonBookmarkFile.FullName) : null;
             if (bookmarkInfo == null)
             {
@@ -166,6 +167,19 @@ namespace SOS
             try
             {
                 LocalBookmarks = JsonConvert.DeserializeObject<HashSet<ModelSearchBookmark>>(bookmarkInfo);
+            }
+            catch (Exception)
+            {
+            }
+        }
+        public HashSet<ChildItem> LocalDocsMPO;
+        private void LoadDocsMPO()
+        {
+            FileInfo jsonInfoFile = new FileInfo(Path.Combine(Environment.CurrentDirectory, "Documentos", "MPO", "info.json"));
+            string jsonInfo = File.Exists(jsonInfoFile.FullName) ? File.ReadAllText(jsonInfoFile.FullName) : null;
+            try 
+            {
+                LocalDocsMPO = JsonConvert.DeserializeObject<HashSet<ChildItem>>(jsonInfo);
             }
             catch (Exception)
             {
@@ -354,6 +368,7 @@ namespace SOS
                         statusOutputLinkLabel.Enabled = true;
                         updateStartToolStripMenuItem.Enabled = true;
                         LoadBookmarks();
+                        LoadDocsMPO();
                         LoadDefaultTreeview();
                     });
                 }
@@ -433,8 +448,7 @@ namespace SOS
                 RemoveSelectedTab();
             }
         }
-
-
+        
         private void BrowserTabSelectedIndexChanged(object sender, EventArgs e)
         {
             if (browserTabControl.SelectedIndex == browserTabControl.TabCount - 1)
@@ -451,7 +465,7 @@ namespace SOS
             tabPage.Controls.Remove(control);
             control.Dispose();//necessário para forçar reload sem cache para url parameters
 
-            var browser = new BrowserTabUserControl(AddTab, url, multiThreadedMessageLoopEnabled)
+            var browser = new BrowserTabUserControl(url, multiThreadedMessageLoopEnabled)
             {
                 Dock = DockStyle.Fill,
             };
@@ -470,7 +484,7 @@ namespace SOS
         {
             browserTabControl.SuspendLayout();
 
-            var browser = new BrowserTabUserControl(AddTab, url, multiThreadedMessageLoopEnabled)
+            var browser = new BrowserTabUserControl(url, multiThreadedMessageLoopEnabled)
             {
                 Dock = DockStyle.Fill,
             };
