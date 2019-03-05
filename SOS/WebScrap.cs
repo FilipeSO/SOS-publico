@@ -169,7 +169,7 @@ namespace SOS
             catch (Exception)
             {                
             }
-            if (LocalBookmark != null) localDocsMPO = new List<ChildItem>(); //forçar update completo caso bookmark corrompido
+            if (LocalBookmarks.Count == 0) localDocsMPO = new List<ChildItem>(); //forçar update completo caso bookmark corrompido
 
             bool bookmarkUpdate = false;
             var client = new WebClient();
@@ -328,7 +328,7 @@ namespace SOS
             catch (Exception)
             {
             }
-            if (LocalBookmarks != null) localDiagramas = new List<Row>(); //forçar update completo caso bookmark corrompido
+            if (LocalBookmarks.Count == 0) localDiagramas = new List<Row>(); //forçar update completo caso bookmark corrompido
 
             bool bookmarkUpdate = false;
             var client = new CookieAwareWebClient();
