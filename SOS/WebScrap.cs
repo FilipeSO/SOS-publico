@@ -16,23 +16,42 @@ using iTextSharp.text.pdf;
 using iTextSharp.text.pdf.parser;
 using System.Xml.Linq;
 using Path = System.IO.Path;
+using System.Threading;
+using System.Diagnostics;
 
 namespace SOS
 {
     public class WebScrap
     {
-        private static readonly string DocDir = Path.Combine(Environment.CurrentDirectory, "Documentos");
-        private static readonly string MpoDir = Path.Combine(DocDir, "MPO");
-        private static readonly string DiagramasDir = Path.Combine(DocDir, "Diagramas");
-        private static readonly string MopDir = Path.Combine(DocDir, "MPO", "MOP");
+        public static readonly string DocDir = Path.Combine(Path.GetPathRoot(AppDomain.CurrentDomain.BaseDirectory), "SOS-publico Documentos");
+        public static readonly string MpoDir = Path.Combine(DocDir, "MPO");
+        public static readonly string DiagramasDir = Path.Combine(DocDir, "Diagramas");
+        public static readonly string MopDir = Path.Combine(DocDir, "MPO", "MOP");
+        public static readonly string MioDir = Path.Combine(DocDir, "MIO");
+        public static readonly string MioRelacionadosDir = Path.Combine(DocDir, "MIO", "Relacionados");
+        public static bool IsCDREAuthenticated = false;
+        private static LinkLabel StatusOutputLinkLabel { get; set; }
 
-        private static LinkLabel StatusOutputLinkLabel = null;
-
-        public WebScrap(LinkLabel linkLabel)
+        public static void Init(LinkLabel linkLabel)
         {
             StatusOutputLinkLabel = linkLabel;
+            if (!Directory.Exists(MpoDir)) Directory.CreateDirectory(MpoDir);
+            if (!Directory.Exists(MopDir)) Directory.CreateDirectory(MopDir);
+            if (!Directory.Exists(DiagramasDir)) Directory.CreateDirectory(DiagramasDir);
+            if (!Directory.Exists(MioDir)) Directory.CreateDirectory(MioDir);
+            if (!Directory.Exists(MioRelacionadosDir)) Directory.CreateDirectory(MioRelacionadosDir);
         }
-        private static CookieContainer cookieContainer = new CookieContainer();
+
+        public static void Reset()
+        {
+            var jsonFiles = Directory.GetFiles(DocDir, "*.json", SearchOption.AllDirectories);
+            foreach (var item in jsonFiles)
+            {
+                File.Delete(item);
+            }
+        }
+
+        public static CookieContainer cookieContainer = new CookieContainer();
 
         private static HttpClientHandler handler = new HttpClientHandler()
         {
@@ -58,19 +77,119 @@ namespace SOS
             }
         }
 
-
-        public void UpdateDocuments() 
+        public static void UpdateDocuments()
         {
+            Stopwatch stopWatch = new Stopwatch();
+            stopWatch.Start();
+            LogUpdate(false, "Iniciou aplicação");
             LoadBookmarks();
             UpdateMPO();
             UpdateDiagramasONS();
+            stopWatch.Stop();
+            LogUpdate(true, $"Término da atualização em {stopWatch.Elapsed.TotalSeconds}s");
         }
 
+        #region Log historico leitura
+        public static async void HistoricoAcesso()
+        {
+            var resultPost = await client.GetAsync($"https://mpo-sos.firebaseio.com/acesso.json?orderBy=%22Data%22&limitToFirst=1000");
+            var content = await resultPost.Content.ReadAsStringAsync();
+            var listaHistoricoAcesso = new List<ModelHistoricoAcessoJson>();
+
+            foreach (Match match in Regex.Matches(content, "{\"D.*?}"))
+            {
+                listaHistoricoAcesso.Add(JsonConvert.DeserializeObject<ModelHistoricoAcessoJson>(match.Value));
+            }
+            listaHistoricoAcesso.ForEach(s => s.Data = UnixTimeStampToDateTime(Convert.ToDouble(s.Data)));
+            listaHistoricoAcesso = listaHistoricoAcesso.OrderByDescending(o => o.Data).ToList();
+
+            var t = new Thread(() =>
+            {
+                Historico historico = new Historico(listaHistoricoAcesso, "acesso");
+                historico.ShowDialog();
+            });
+            t.SetApartmentState(ApartmentState.STA);
+            t.Start();
+            t.Join();
+        }
+        public static async void HistoricoMaquina()
+        {
+            var resultPost = await client.GetAsync($"https://mpo-sos.firebaseio.com/app.json?orderBy=%22Concluido%22&equalTo=true&limitToFirst=1000");
+            var content = await resultPost.Content.ReadAsStringAsync();
+            var listaHistoricoMaquina = new List<ModelHistoricoUpdateJson>();
+
+            foreach (Match match in Regex.Matches(content, "{\"C.*?}"))
+            {
+                listaHistoricoMaquina.Add(JsonConvert.DeserializeObject<ModelHistoricoUpdateJson>(match.Value));
+            }
+            listaHistoricoMaquina.ForEach(s => s.Data = UnixTimeStampToDateTime(Convert.ToDouble(s.Data)));
+            listaHistoricoMaquina = listaHistoricoMaquina.OrderByDescending(o => o.Data).ToList();
+
+            var t = new Thread(() =>
+            {
+                Historico historico = new Historico(listaHistoricoMaquina, "maquina");
+                historico.ShowDialog();
+            });
+            t.SetApartmentState(ApartmentState.STA);
+            t.Start();
+            t.Join();
+        }
+
+        public static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
+        {
+            // Unix timestamp is seconds past epoch
+            DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+            dtDateTime = dtDateTime.AddMilliseconds(unixTimeStamp).ToLocalTime();
+            return dtDateTime;
+        }
+        #endregion
+
         #region Logging methods
+        private static ModelHistoricoAcesso ultimoHistorico;
+        public static async void LogAcesso(string url, string index, bool SSC)
+        {
+            ModelHistoricoAcesso historico = new ModelHistoricoAcesso
+            {
+                Data = new Dictionary<string, object>
+                {
+                    [".sv"] = "timestamp"
+                },
+                PCMachineName = Environment.MachineName,
+                PCUsername = Environment.UserName,
+                SSC = SSC,
+                Url = url,
+                Indice = index
+            };
+            if (historico != ultimoHistorico)
+            {
+                var jsonHistorico = JsonConvert.SerializeObject(historico);
+                var httpContent = new StringContent(jsonHistorico, Encoding.UTF8, "application/json");
+                var resultPost = await client.PostAsync($"https://mpo-sos.firebaseio.com/acesso.json", httpContent);
+                ultimoHistorico = historico;
+            }
+        }
+
+        public static async void LogUpdate(bool concluido, string msg)
+        {
+            ModelHistoricoUpdate historico = new ModelHistoricoUpdate
+            {
+                Data = new Dictionary<string, object>
+                {
+                    [".sv"] = "timestamp"
+                },
+                PCMachineName = Environment.MachineName,
+                PCUsername = Environment.UserName,
+                Concluido = concluido,
+                Mensagem = msg
+            };
+            var jsonHistorico = JsonConvert.SerializeObject(historico);
+            var httpContent = new StringContent(jsonHistorico, Encoding.UTF8, "application/json");
+            var resultPost = await client.PostAsync($"https://mpo-sos.firebaseio.com/app.json", httpContent);
+        }
 
         static void LogUpdate(string report, bool display = false)
         {
-            string LogText = $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: {report}";
+            string LogText = $"{DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")}: {report}";
             using (StreamWriter outfile = new StreamWriter(Path.Combine(DocDir, "log.txt"), AppendLog))
             {
                 outfile.WriteLine(LogText);
@@ -97,21 +216,16 @@ namespace SOS
             catch (Exception)
             {
             }
+            if (LocalBookmarks == null) LocalBookmarks = new HashSet<ModelSearchBookmark>();
         }
         private static IEnumerable<Bookmark> GetPdfBookmark(FileInfo docFile, bool diagrama = false, string tituloDiagrama = null)
         {
             var listBookmarks = new List<Bookmark>();
-            //listBookmarks.Add(new Bookmark //default primeiro bookmark é o nome do próprio documento
-            //{
-            //    Title = docFile.Name,
-            //    PathAndPage = $"{docFile.FullName}"
-            //});
-            //if (diagrama) return listBookmarks;
             if (diagrama)
             {
                 listBookmarks.Add(new Bookmark //default primeiro bookmark é o nome do próprio documento
                 {
-                    Title = tituloDiagrama.ToLower().IndexOf("diagrama")>-1 ? tituloDiagrama : $"Diagrama {tituloDiagrama}",
+                    Title = tituloDiagrama.ToLower().IndexOf("diagrama") > -1 ? tituloDiagrama : $"Diagrama {tituloDiagrama}",
                     PathAndPage = $"{docFile.FullName}"
                 });
                 return listBookmarks;
@@ -153,10 +267,10 @@ namespace SOS
         {
             LogUpdate("#Início - Procedimentos da Operação (MPO)", true);
             LogUpdate("ons.org.br/ conectando...", true);
-            IEnumerable<ChildItem> docsMPO = ScrapMPOAsync(null).GetAwaiter().GetResult();
+            IEnumerable<ChildItem> docsMPO = ScrapMPOAsync("FURNAS").GetAwaiter().GetResult();
             int totalItems = docsMPO.Count();
             int counter = 1;
-              
+
             FileInfo jsonInfoFile = new FileInfo(Path.Combine(MpoDir, "info.json"));
 
             string jsonInfo = File.Exists(jsonInfoFile.FullName) ? File.ReadAllText(jsonInfoFile.FullName) : null;
@@ -164,10 +278,10 @@ namespace SOS
             var localDocsMPO = new List<ChildItem>();
             try //problema ao corromper gravação do json //parse arquivo json inválido
             {
-                localDocsMPO = JsonConvert.DeserializeObject<List<ChildItem>>(jsonInfo); 
+                localDocsMPO = JsonConvert.DeserializeObject<List<ChildItem>>(jsonInfo);
             }
             catch (Exception)
-            {                
+            {
             }
             if (LocalBookmarks.Count == 0) localDocsMPO = new List<ChildItem>(); //forçar update completo caso bookmark corrompido
 
@@ -218,19 +332,19 @@ namespace SOS
                 File.WriteAllText(jsonBookmarkFile.FullName, JsonConvert.SerializeObject(LocalBookmarks));
             }
 
-            var mopLinks = docsMPO.Where(w => w.MpoMopsLink != null).SelectMany(s => s.MpoMopsLink).Distinct();                
-            var mopsVigentes = mopLinks.Select(s => Path.Combine(MopDir, s.Split('/').Last()));
+            var mopLinks = docsMPO.Where(w => w.MpoMopsLink != null).SelectMany(s => s.MpoMopsLink).Distinct();
+            var mopsVigentes = mopLinks.Select(s => Path.Combine(MopDir, Path.GetFileName(s)));
             var mopsLocal = Directory.GetFiles(MopDir, "*.pdf").Except(mopsVigentes);
             foreach (var item in mopsLocal)
             {
                 File.Delete(item);
-                LogUpdate($"{item.Split('\\').Last()} não está vigente e foi apagada");
+                LogUpdate($"{Path.GetFileNameWithoutExtension(item)} não está vigente e foi apagada");
             }
             totalItems = mopLinks.Count();
             counter = 1;
             foreach (var mopLink in mopLinks)
             {
-                FileInfo mopFile = new FileInfo(Path.Combine(MopDir, mopLink.Split('/').Last()));
+                FileInfo mopFile = new FileInfo(Path.Combine(MopDir, Path.GetFileName(mopLink)));
                 LogUpdate($"{mopFile.Name} atualizando {counter++} de {totalItems}", true);
                 if (mopFile.Exists)
                 {
@@ -273,7 +387,7 @@ namespace SOS
                     string responsavel = item.MpoResponsavel;
                     string fileMOP = mop.Replace('/', '-');
                     item.MpoMopsLink.Add($"http://www.ons.org.br/MPO/Mensagem Operativa/{tag}/{responsavel}/{fileMOP}.pdf");
-                }                
+                }
             }
             return docs;
         }
@@ -313,11 +427,11 @@ namespace SOS
         {
             LogUpdate("#Início - Diagramas ONS", true);
             LogUpdate("cdre.org.br/ conectando...", true);
-            IEnumerable<Row> diagramasONS = ScrapOnsDiagramasAsync("fsaolive", "123123aA").GetAwaiter().GetResult();
+            IEnumerable<Row> diagramasONS = ScrapOnsDiagramasAsync().GetAwaiter().GetResult();
             int totalItems = diagramasONS.Count();
             int counter = 1;
             FileInfo jsonInfoFile = new FileInfo(Path.Combine(DiagramasDir, "info.json"));
-           
+
             string jsonInfo = File.Exists(jsonInfoFile.FullName) ? File.ReadAllText(jsonInfoFile.FullName) : null;
 
             IEnumerable<Row> localDiagramas = new List<Row>();
@@ -381,18 +495,18 @@ namespace SOS
             foreach (var item in diagramasLocal)
             {
                 File.Delete(item);
-                LogUpdate($"{item.Split('\\').Last()} não está vigente e foi apagado");
+                LogUpdate($"{Path.GetFileNameWithoutExtension(item)} não está vigente e foi apagado");
             }
             File.WriteAllText(jsonInfoFile.FullName, JsonConvert.SerializeObject(diagramasONS));
             client.Dispose();
             LogUpdate("#Término - Diagramas ONS", true);
         }
 
-        static async Task<IEnumerable<Row>> ScrapOnsDiagramasAsync(string username, string password)
+        static async Task<IEnumerable<Row>> ScrapOnsDiagramasAsync()
         {
-            await DiagramasAuthCDRE(username,password);
+            //await DiagramasAuthCDRE(username, password); etapa realizada pelo login
 
-            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36");     
+            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36");
             string urlRaizDiagramas = "https://cdre.ons.org.br/_layouts/15/inplview.aspx?List={04854BFA-7127-4E36-A4ED-3EE860D929E8}&View={C35C3494-CC49-4A71-9569-34BDE063C9B5}&ViewCount=129&IsXslView=TRUE&IsCSR=TRUE";
             var resultPost = await client.PostAsync($"{urlRaizDiagramas}", null);
             var resultContent = await resultPost.Content.ReadAsStringAsync();
@@ -405,62 +519,42 @@ namespace SOS
                 jsonDiagramas = JsonConvert.DeserializeObject<ModelDiagramasONS>(resultContent);
                 diagramas.AddRange(jsonDiagramas.Row);
             }
-            //Regex formacaoIncorreta = new Regex("_(r|R)ev.[a-zA-Z]+"); //remover diagramas nomenclatura incorreta
-            //diagramas = diagramas.Where(w => !formacaoIncorreta.IsMatch(w.FileLeafRef)).ToList(); //remover diagramas nomenclatura incorreta
 
-            //Regex formatacaoCorreta = new Regex("_(r|R)ev.[0-9]+.pdf"); //manter diagramas com formacão correta
-            //diagramas = diagramas.Where(w => formatacaoCorreta.IsMatch(w.FileLeafRef)).ToList(); //manter diagramas com formacão correta
-            
             return diagramas;
-            //var cookies = handler.CookieContainer.GetCookies(new Uri("https://cdre.ons.org.br"));
-
-            //resultPost = await client.PostAsync("https://cdre.ons.org.br/_layouts/15/inplview.aspx?List={04854BFA-7127-4E36-A4ED-3EE860D929E8}&View={C35C3494-CC49-4A71-9569-34BDE063C9B5}&ViewCount=129&IsXslView=TRUE&IsCSR=TRUE&Paged=TRUE&p_ID=1444&PageFirstRow=501&View=c35c3494-cc49-4a71-9569-34bde063c9b5", null);
-            //resultContent = await resultPost.Content.ReadAsStringAsync();
-            //diagramas = JsonConvert.DeserializeObject<ModelDiagramasONS>(resultContent);
-
-
-            //resultPost = await client.PostAsync("https://cdre.ons.org.br/_layouts/15/inplview.aspx?List={04854BFA-7127-4E36-A4ED-3EE860D929E8}&View={C35C3494-CC49-4A71-9569-34BDE063C9B5}&ViewCount=129&IsXslView=TRUE&IsCSR=TRUE&Paged=TRUE&p_ID=2951&PageFirstRow=1001&View=c35c3494-cc49-4a71-9569-34bde063c9b5", null);
-            //resultContent = await resultPost.Content.ReadAsStringAsync();
-            //diagramas = JsonConvert.DeserializeObject<ModelDiagramasONS>(resultContent);
-
-            //resultPost = await client.PostAsync("https://cdre.ons.org.br/_layouts/15/inplview.aspx?List={04854BFA-7127-4E36-A4ED-3EE860D929E8}&View={C35C3494-CC49-4A71-9569-34BDE063C9B5}&ViewCount=129&IsXslView=TRUE&IsCSR=TRUE&Paged=TRUE&p_ID=4465&PageFirstRow=1501&View=c35c3494-cc49-4a71-9569-34bde063c9b5", null);
-            //resultContent = await resultPost.Content.ReadAsStringAsync();
-            //diagramas = JsonConvert.DeserializeObject<ModelDiagramasONS>(resultContent);
-
-            //resultPost = await client.PostAsync("https://cdre.ons.org.br/_layouts/15/inplview.aspx?List={04854BFA-7127-4E36-A4ED-3EE860D929E8}&View={C35C3494-CC49-4A71-9569-34BDE063C9B5}&ViewCount=129&IsXslView=TRUE&IsCSR=TRUE&Paged=TRUE&p_ID=5986&PageFirstRow=2001&View=c35c3494-cc49-4a71-9569-34bde063c9b5", null);
-            //resultContent = await resultPost.Content.ReadAsStringAsync();
-            //diagramas = JsonConvert.DeserializeObject<ModelDiagramasONS>(resultContent);
-
-            //resultPost = await client.PostAsync("https://cdre.ons.org.br/_layouts/15/inplview.aspx?List={04854BFA-7127-4E36-A4ED-3EE860D929E8}&View={C35C3494-CC49-4A71-9569-34BDE063C9B5}&ViewCount=129&IsXslView=TRUE&IsCSR=TRUE&Paged=TRUE&p_ID=7350&PageFirstRow=2501&View=c35c3494-cc49-4a71-9569-34bde063c9b5", null);
-            //resultContent = await resultPost.Content.ReadAsStringAsync();
-            //diagramas = JsonConvert.DeserializeObject<ModelDiagramasONS>(resultContent);
-
         }
 
-        static async Task DiagramasAuthCDRE(string username, string password)
+        public static async Task DiagramasAuthCDRE(string username, string password)
         {
+
             string requestBody = $"username={username}&password={password}&submit.Signin=Entrar&CountLogin=0&CDRESolicitarCadastroUrl=http%3A%2F%2Fcdreweb.ons.org.br%2FCDRE%2FViews%2FSolicitarCadastro%2FSolicitarCadastro.aspx&POPAutenticacaoIntegradaUrl=https%3A%2F%2Facessointegrado.ons.org.br%2Facessointegrado%3FReturnUrl%3Dhttps%253a%252f%252fpops.ons.org.br%252fons.pop.federation%252fredirect%252f%253fwa%253dwsignin1.0%2526wtrealm%253d%252bhttps%25253a%25252f%25252fcdre.ons.org.br%25252f_trust%25252f%2526wctx%253dhttps%25253a%25252f%25252fcdre.ons.org.br%25252f_layouts%25252f15%25252fAuthenticate.aspx%25253fSource%25253d%2525252FMPODIAG%2525252FForms%2525252FDiags%2525252Easpx%2526wreply%253dhttps%25253a%25252f%25252fcdre.ons.org.br%25252f_trust%25252fdefault.aspx&PasswordRecoveryUrl=https%3A%2F%2Fpops.ons.org.br%2Fons.pop.federation%2Fpasswordrecovery%2F%3FReturnUrl%3Dhttps%253a%252f%252fpops.ons.org.br%252fons.pop.federation%252f%253fwa%253dwsignin1.0%2526wtrealm%253d%252bhttps%25253a%25252f%25252fcdre.ons.org.br%25252f_trust%25252f%2526wctx%253dhttps%25253a%25252f%25252fcdre.ons.org.br%25252f_layouts%25252f15%25252fAuthenticate.aspx%25253fSource%25253d%2525252FMPODIAG%2525252FForms%2525252FDiags%2525252Easpx%2526wreply%253dhttps%25253a%25252f%25252fcdre.ons.org.br%25252f_trust%25252fdefault.aspx";
             var httpContent = new StringContent(requestBody, Encoding.UTF8, "application/x-www-form-urlencoded");
-            
+
             //ON.AUTH_PROD COOKIE
             var resultPost = await client.PostAsync("https://pops.ons.org.br/ons.pop.federation/?wa=wsignin1.0&wtrealm=+https%3a%2f%2fcdre.ons.org.br%2f_trust%2f&wctx=https%3a%2f%2fcdre.ons.org.br%2f_layouts%2f15%2fAuthenticate.aspx%3fSource%3d%252F&wreply=https%3a%2f%2fcdre.ons.org.br%2f_trust%2fdefault.aspx", httpContent);
 
             //XML AUTH REDIRECT POST 
             resultPost = await client.PostAsync("https://pops.ons.org.br/ons.pop.federation/redirect/?wa=wsignin1.0&wtrealm=+https%3a%2f%2fcdre.ons.org.br%2f_trust%2f&wctx=https%3a%2f%2fcdre.ons.org.br%2f_layouts%2f15%2fAuthenticate.aspx%3fSource%3d%252F&wreply=https%3a%2f%2fcdre.ons.org.br%2f_trust%2fdefault.aspx", null);
             var content = await resultPost.Content.ReadAsStringAsync();
-
-            XmlDocument xml = new XmlDocument();
-            xml.LoadXml(content);
             requestBody = "";
-            foreach (XmlNode node in xml.SelectNodes("//input[@name][@value]"))
+            try
             {
-                requestBody += $"{node.Attributes["name"].Value}={HttpUtility.UrlEncode(node.Attributes["value"].Value)}&";
+                XmlDocument xml = new XmlDocument();
+                xml.LoadXml(content);
+                foreach (XmlNode node in xml.SelectNodes("//input[@name][@value]"))
+                {
+                    requestBody += $"{node.Attributes["name"].Value}={HttpUtility.UrlEncode(node.Attributes["value"].Value)}&";
+                }
+                requestBody = requestBody.TrimEnd('&');
             }
-            requestBody = requestBody.TrimEnd('&');
+            catch (Exception)
+            {
+                //xml parse failure
+            }
             httpContent = new StringContent(requestBody, Encoding.UTF8, "application/x-www-form-urlencoded");
 
             //FED_AUTH COOKIE
             resultPost = await client.PostAsync("https://cdre.ons.org.br/_trust/", httpContent);
+            if (cookieContainer.Count == 3) IsCDREAuthenticated = true;
         }
 
         #endregion ONS DIAGRAMAS

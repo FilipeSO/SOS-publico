@@ -16,13 +16,13 @@ namespace SOS
         [STAThread]
         static void Main()
         {
-            Application.SetCompatibleTextRenderingDefault(false);
+            //Application.SetCompatibleTextRenderingDefault(false);
 
             Cef.EnableHighDPISupport();
 
-            const bool multiThreadedMessageLoop = true;
+            //const bool multiThreadedMessageLoop = true;
 
-            var browser = new BrowserInterface(multiThreadedMessageLoop);
+            //var browser = new BrowserInterface(multiThreadedMessageLoop);
 
             //IBrowserProcessHandler browserProcessHandler;
 
@@ -45,8 +45,9 @@ namespace SOS
 
 
             Application.EnableVisualStyles();
-            //Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(browser);
+            Application.SetCompatibleTextRenderingDefault(false);
+            //Application.Run(browser);
+            Application.Run(new Login());
         }
     }
 }

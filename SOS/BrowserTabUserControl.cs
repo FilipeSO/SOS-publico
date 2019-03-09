@@ -102,22 +102,25 @@ namespace SOS
         private void ShowRelatedDocuments(string url)
         {
             if (url.IndexOf(".pdf") == -1) return;
-            BrowserInterface form = ParentForm as BrowserInterface;
-            string relatedDocs = form.LocalDocsMPO.Where(w => w.MpoCodigo == Path.GetFileNameWithoutExtension(url)).Select(s => s.MpoAlteradosPelasMops).FirstOrDefault();
-            if (string.IsNullOrEmpty(relatedDocs)) return;
-            var chrome = browserPanel.Controls[0] as ChromiumWebBrowser;
-            string links = "";
-            foreach (var doc in relatedDocs.Split(','))
+            if (url.IndexOf("/MPO/") > -1)
             {
-                links += $"<a href=\"MOP/{doc.Replace('/','-')}.pdf\">{doc}</a>, ";
+                BrowserInterface form = ParentForm as BrowserInterface;
+                string relatedDocs = form.LocalRefsMOP.Where(w => w.MpoCodigo == Path.GetFileNameWithoutExtension(url)).Select(s => s.MpoAlteradosPelasMops).FirstOrDefault();
+                if (string.IsNullOrEmpty(relatedDocs)) return;
+                var chrome = browserPanel.Controls[0] as ChromiumWebBrowser;
+                string links = "";
+                foreach (var doc in relatedDocs.Split(','))
+                {
+                    links += $"<a href=\"MOP/{doc.Replace('/', '-')}.pdf\">{doc}</a>, ";
+                }
+                string script = @"
+                var embedNode = document.getElementsByTagName('embed')[0]
+                var node = document.createElement('div');    
+                node.innerHTML = 'Documentos relacionados: " + links + @"'
+                document.getElementsByTagName('body')[0].insertBefore(node, embedNode)
+                document.body.style.backgroundColor = 'rgb(255, 255, 255)';";
+                chrome.ExecuteScriptAsyncWhenPageLoaded(script);
             }
-            string script = @"
-            var embedNode = document.getElementsByTagName('embed')[0]
-            var node = document.createElement('div');    
-            node.innerHTML = 'Documentos relacionados: "+ links + @"'
-            document.getElementsByTagName('body')[0].insertBefore(node, embedNode)
-            document.body.style.backgroundColor = 'rgb(255, 255, 255)';";
-            chrome.ExecuteScriptAsyncWhenPageLoaded(script);    
         }
 
         protected override void Dispose(bool disposing)

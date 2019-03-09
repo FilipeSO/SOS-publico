@@ -23,24 +23,23 @@ namespace SOS
     {
         // Default to a small increment:
         private const double ZoomIncrement = 0.10;
-        private const string DefaultUrlForAddedTabs = "https://www.google.com";
-        private string[] DocumentDirectories = new string[] { Path.Combine(Environment.CurrentDirectory, "Documentos", "MPO"), Path.Combine(Environment.CurrentDirectory, "Documentos", "MPO", "MOP"), Path.Combine(Environment.CurrentDirectory, "Documentos", "Diagramas") };
-
+        private const string DefaultUrlForAddedTabs = "https://mposos.com.br";
+        
         private bool multiThreadedMessageLoopEnabled;
+        private bool OfflineMode { get; set; }
 
-        public BrowserInterface(bool multiThreadedMessageLoopEnabled)
+        public BrowserInterface(bool multiThreadedMessageLoopEnabled, bool offlineMode = false)
         {
             InitializeComponent();
-
+            OfflineMode = offlineMode;
             var bitness = Environment.Is64BitProcess ? "x64" : "x86";
-            Text = "SOS - " + bitness;
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
+            Text = $"SOS - {bitness} v.{versionInfo.FileVersion}";
             WindowState = FormWindowState.Maximized;
-            foreach (var dir in DocumentDirectories)
-            {
-                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-            }
 
             Load += BrowserInterface_Load;
+            WebScrap.Init(statusOutputLinkLabel);
             //Only perform layout when control has completly finished resizing
             ResizeBegin += (s, e) => SuspendLayout();
             ResizeEnd += (s, e) => ResumeLayout(true);
@@ -50,13 +49,100 @@ namespace SOS
         private void BrowserInterface_Load(object sender, EventArgs e)
         {
             splitContainer1.SplitterDistance = 400;
-            FileInfo pdfFile = new FileInfo($"{Environment.CurrentDirectory}/Documentos/MPO/AO-AJ.SE.UHAT.pdf");
-            AddTab($"{pdfFile.FullName}#page=5");
-            LoadBookmarks();
-            LoadDocsMPO();
-            LoadDefaultTreeview();
+            AddTab(DefaultUrlForAddedTabs);
+            LoadReferences();
             UpdateStart();
         }
+        #region Load reference docs / default treeview methods
+        private void LoadReferences()
+        {
+            LoadBookmarks();
+            LoadRefsMOP();
+            LoadDefaultTreeview();
+        }
+
+        private HashSet<ModelSearchBookmark> LocalBookmarks;
+        private void LoadBookmarks()
+        {
+            //PM.SE.3SP NUMERO 1239 para testes
+            FileInfo jsonBookmarkFile = new FileInfo(Path.Combine(WebScrap.DocDir, "bookmarks.json"));
+            string bookmarkInfo = File.Exists(jsonBookmarkFile.FullName) ? File.ReadAllText(jsonBookmarkFile.FullName) : null;
+            if (bookmarkInfo == null)
+            {
+                SearchBookmarkPanelEnabled(false);
+            }
+            else
+            {
+                SearchBookmarkPanelEnabled(true);
+            }
+            try
+            {
+                LocalBookmarks = JsonConvert.DeserializeObject<HashSet<ModelSearchBookmark>>(bookmarkInfo);
+            }
+            catch (Exception)
+            {
+                LocalBookmarks = new HashSet<ModelSearchBookmark>();
+            }
+        }
+
+        public HashSet<ChildItem> LocalRefsMOP;
+        private void LoadRefsMOP()
+        {
+            FileInfo jsonInfoFile = new FileInfo(Path.Combine(WebScrap.MpoDir, "info.json"));
+            string jsonInfo = File.Exists(jsonInfoFile.FullName) ? File.ReadAllText(jsonInfoFile.FullName) : null;
+            try
+            {
+                LocalRefsMOP = JsonConvert.DeserializeObject<HashSet<ChildItem>>(jsonInfo);
+            }
+            catch (Exception)
+            {
+                LocalRefsMOP = new HashSet<ChildItem>();
+            }
+        }
+        
+        private void LoadDefaultTreeview()
+        {
+            treeViewSearch.BeginUpdate();
+            DirectoryInfo docDir = new DirectoryInfo(WebScrap.DocDir);
+            if (docDir.Exists)
+            {
+                ListDirectory(treeViewSearch, docDir.FullName);
+                treeviewStatusLabel.Text = $"Estão vigentes {treeViewSearch.GetNodeCount(true)} diagramas e documentos";
+            }
+            else
+            {
+                SearchBookmarkPanelEnabled(false);
+            }
+            treeViewSearch.EndUpdate();
+        }
+        private void ListDirectory(TreeView treeView, string path)
+        {
+            treeView.Nodes.Clear();
+            var rootDirectories = new DirectoryInfo(path).GetDirectories();
+            foreach (var directory in rootDirectories)
+            {
+                treeViewSearch.Nodes.Add(CreateDirectoryNode(directory));
+            }
+        }
+        private static TreeNode CreateDirectoryNode(DirectoryInfo directoryInfo)
+        {
+            var directoryNode = new TreeNode(directoryInfo.Name);
+            foreach (var directory in directoryInfo.GetDirectories())
+                directoryNode.Nodes.Add(CreateDirectoryNode(directory));
+            foreach (var file in directoryInfo.GetFiles())
+                if (!file.Name.EndsWith(".txt") && !file.Name.EndsWith(".json")) directoryNode.Nodes.Add(new TreeNode { Text = file.Name, Tag = file.FullName });
+            return directoryNode;
+        }
+        private void SearchBookmarkPanelEnabled(bool v)
+        {
+            treeviewStatusLabel.Text = v == true ? "" : "Aguardando conclusão da atualização";
+            treeviewStatusLabel.Enabled = v;
+            txtBookmarkSearch.Enabled = v;
+            treeViewSearch.Enabled = v;
+            btnSearch.Enabled = v;
+        }
+
+        #endregion
 
         #region Search methods
 
@@ -114,87 +200,6 @@ namespace SOS
         //    dataGrid1.ResumeLayout(true);
         //}
 
-        private void LoadDefaultTreeview()
-        {
-            treeViewSearch.BeginUpdate();
-            DirectoryInfo docDir = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "Documentos"));
-            if (docDir.Exists)
-            {
-                ListDirectory(treeViewSearch, docDir.FullName);
-                treeviewStatusLabel.Text = $"Estão vigentes {treeViewSearch.GetNodeCount(true)} diagramas e documentos";
-            }
-            else
-            {
-                SearchBookmarkPanelEnabled(false);
-            }
-            treeViewSearch.EndUpdate();
-        }
-
-        private void ListDirectory(TreeView treeView, string path)
-        {
-            treeView.Nodes.Clear();
-            var rootDirectories = new DirectoryInfo(path).GetDirectories();
-            foreach (var directory in rootDirectories)
-            {
-                treeViewSearch.Nodes.Add(CreateDirectoryNode(directory));
-            }
-        }
-
-        private static TreeNode CreateDirectoryNode(DirectoryInfo directoryInfo)
-        {
-            var directoryNode = new TreeNode(directoryInfo.Name);
-            foreach (var directory in directoryInfo.GetDirectories())
-                directoryNode.Nodes.Add(CreateDirectoryNode(directory));
-            foreach (var file in directoryInfo.GetFiles())
-                if (!file.Name.EndsWith(".txt") && !file.Name.EndsWith(".json")) directoryNode.Nodes.Add(new TreeNode { Text = file.Name, Tag = file.FullName });
-            return directoryNode;
-        }
-
-        private HashSet<ModelSearchBookmark> LocalBookmarks;
-        private void LoadBookmarks()
-        {
-            //PM.SE.3SP NUMERO 1239 para testes
-            FileInfo jsonBookmarkFile = new FileInfo(Path.Combine(Environment.CurrentDirectory, "Documentos", "bookmarks.json"));
-            string bookmarkInfo = File.Exists(jsonBookmarkFile.FullName) ? File.ReadAllText(jsonBookmarkFile.FullName) : null;
-            if (bookmarkInfo == null)
-            {
-                SearchBookmarkPanelEnabled(false);
-            }
-            else
-            {
-                SearchBookmarkPanelEnabled(true);
-            }
-            try
-            {
-                LocalBookmarks = JsonConvert.DeserializeObject<HashSet<ModelSearchBookmark>>(bookmarkInfo);
-            }
-            catch (Exception)
-            {
-            }
-        }
-        public HashSet<ChildItem> LocalDocsMPO;
-        private void LoadDocsMPO()
-        {
-            FileInfo jsonInfoFile = new FileInfo(Path.Combine(Environment.CurrentDirectory, "Documentos", "MPO", "info.json"));
-            string jsonInfo = File.Exists(jsonInfoFile.FullName) ? File.ReadAllText(jsonInfoFile.FullName) : null;
-            try 
-            {
-                LocalDocsMPO = JsonConvert.DeserializeObject<HashSet<ChildItem>>(jsonInfo);
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        private void SearchBookmarkPanelEnabled(bool v)
-        {
-            treeviewStatusLabel.Text = v == true ? "" : "Aguardando conclusão da atualização";
-            treeviewStatusLabel.Enabled = v;
-            txtBookmarkSearch.Enabled = v;
-            treeViewSearch.Enabled = v;
-            btnSearch.Enabled = v;
-        }
-
         private void SearchBookmarks()
         {
             if (LocalBookmarks == null) return;
@@ -232,8 +237,8 @@ namespace SOS
                             TreeNode treenode = new TreeNode { Text = $"{title}", Tag = $"{bookmark.PathAndPage}", ToolTipText = bookmark.Title };
                             docNode.Nodes.Add(treenode);
                         }
-                    }                   
-                    if (docNode.Nodes.Count > 0) lock (treeNodeResults)treeNodeResults.Add(docNode);                
+                    }
+                    if (docNode.Nodes.Count > 0) lock (treeNodeResults) treeNodeResults.Add(docNode);
                 });
                 if (treeNodeResults.Count > 0) treeViewSearch.Nodes.AddRange(treeNodeResults.ToArray());
             }
@@ -265,16 +270,21 @@ namespace SOS
 
         private void TreeViewSearchNodeClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            if (e.Node.Tag != null && e.Button == MouseButtons.Right)
+            if (e.Node.Tag != null)
             {
-                treeViewSearch.SelectedNode = e.Node;
-                AddTab(e.Node.Tag.ToString());
+                WebScrap.LogAcesso(e.Node.Tag.ToString(), e.Node.Text, false);
+                if (e.Button == MouseButtons.Right)
+                {
+                    treeViewSearch.SelectedNode = e.Node;
+                    AddTab(e.Node.Tag.ToString());
+                }
+                if (e.Button == MouseButtons.Left)
+                {
+                    treeViewSearch.SelectedNode = e.Node;
+                    LoadActualTab(e.Node.Tag.ToString());
+                }
             }
-            if (e.Node.Tag != null && e.Button == MouseButtons.Left)
-            {
-                treeViewSearch.SelectedNode = e.Node;
-                LoadActualTab(e.Node.Tag.ToString());
-            }
+
         }
         private string RemoveDiacriticsAndSpecialCharactersToLower(string text)
         {
@@ -349,33 +359,44 @@ namespace SOS
         #region Update methods
         private void UpdateStart()
         {
-            WebScrap webScrap = new WebScrap(statusOutputLinkLabel);
+            if (OfflineMode == true)
+            {
+                statusOutputLinkLabel.Links.Clear();
+                statusOutputLinkLabel.Links.Add("Você está utilizando o SOS no modo Offline. Efetue login para realizar atualização de documentos. Cheque o histórico de atualização clicando ".Length, "aqui".Length, Path.Combine(WebScrap.DocDir, "log.txt"));
+                statusOutputLinkLabel.Text = $"Você está utilizando o SOS no modo Offline. Efetue login para realizar atualização de documentos. Cheque o histórico de atualização clicando aqui";
+                return;
+            }
             updateStartToolStripMenuItem.Enabled = false;
+            forcarAtualizacaoCompletaToolStripMenuItem.Enabled = false;
+            historicoToolStripMenuItem.Enabled = false;
             updateStatusToolStripMenuItem.Checked = true;
             statusOutputLinkLabel.Visible = true;
             statusOutputLinkLabel.Enabled = false;
-            statusOutputLinkLabel.Links.Clear();
 
             Task.Run(() =>
             {
                 try
                 {
-                    webScrap.UpdateDocuments();
+                    WebScrap.UpdateDocuments();
                     statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() =>
                     {
-                        statusOutputLinkLabel.Links.Add("MM/dd/yyyy HH:mm:ss: Atualização concluída. Cheque o histórico de atualização clicando ".Length, "aqui".Length, Path.Combine(Environment.CurrentDirectory, "Documentos", "log.txt"));
-                        statusOutputLinkLabel.Text = $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: Atualização concluída. Cheque o histórico de atualização clicando aqui";
+                        statusOutputLinkLabel.Links.Clear();
+                        statusOutputLinkLabel.Links.Add("dd/MM/yyyy HH:mm:ss: Atualização concluída. Cheque o histórico de atualização clicando ".Length, "aqui".Length, Path.Combine(WebScrap.DocDir, "log.txt"));
+                        statusOutputLinkLabel.Text = $"{DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")}: Atualização concluída. Cheque o histórico de atualização clicando aqui";
                         statusOutputLinkLabel.Enabled = true;
                         updateStartToolStripMenuItem.Enabled = true;
-                        LoadBookmarks();
-                        LoadDocsMPO();
-                        LoadDefaultTreeview();
+                        forcarAtualizacaoCompletaToolStripMenuItem.Enabled = true;
+                        historicoToolStripMenuItem.Enabled = true;
+                        LoadReferences();
                     });
                 }
                 catch (Exception ex)
                 {
-                    statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => statusOutputLinkLabel.Text = $"{DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")}: Não foi possível concluir a atualização de documentos. Cheque se está conectado à Intranet e Internet. Caso o problema persista comunique o administrador da aplicação");
-                    File.WriteAllText(Path.Combine(Environment.CurrentDirectory, "Documentos", "crash_report.txt"), $"Data: {ex.Data}{Environment.NewLine}Source:{ex.Source}{Environment.NewLine}StackTrace:{ex.StackTrace}{Environment.NewLine}TargetSite:{ex.TargetSite}{Environment.NewLine}InnerExceptionMessage:{ex.InnerException.Message}{Environment.NewLine}ExceptionMessage:{ex.Message}{Environment.NewLine}");
+                    statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => statusOutputLinkLabel.Text = $"{DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")}: Não foi possível concluir a atualização de documentos. Cheque se está conectado à Intranet e Internet. Caso o problema persista comunique o administrador da aplicação");
+                    statusOutputLinkLabel.Enabled = true;
+                    updateStartToolStripMenuItem.Enabled = true;
+                    forcarAtualizacaoCompletaToolStripMenuItem.Enabled = true;
+                    File.WriteAllText(Path.Combine(WebScrap.DocDir, "crash_report.txt"), $"Data: {ex.Data}{Environment.NewLine}Source:{ex.Source}{Environment.NewLine}StackTrace:{ex.StackTrace}{Environment.NewLine}TargetSite:{ex.TargetSite}{Environment.NewLine}InnerExceptionMessage:{ex.InnerException.Message}{Environment.NewLine}ExceptionMessage:{ex.Message}{Environment.NewLine}");
                 }
             });
 
@@ -383,7 +404,7 @@ namespace SOS
         private void StatusOutputLinkLabelClick(object sender, LinkLabelLinkClickedEventArgs e)
         {
             statusOutputLinkLabel.LinkVisited = true;
-            AddTab(e.Link.LinkData.ToString());
+            if (File.Exists(e.Link.LinkData.ToString())) AddTab(e.Link.LinkData.ToString());
         }
 
         #endregion
@@ -448,7 +469,7 @@ namespace SOS
                 RemoveSelectedTab();
             }
         }
-        
+
         private void BrowserTabSelectedIndexChanged(object sender, EventArgs e)
         {
             if (browserTabControl.SelectedIndex == browserTabControl.TabCount - 1)
@@ -520,9 +541,39 @@ namespace SOS
         #endregion
 
         #region MenuStrip click methods
+        private void ForcarAtualizacaoCompletaItemClick(object sender, EventArgs e)
+        {
+            if (OfflineMode == true) return;
+            WebScrap.Reset();
+            UpdateStart();
+        }
+
+        private void HistoricoAtualizacaoMaquinaItemClick(object sender, EventArgs e)
+        {
+            try
+            {
+                WebScrap.HistoricoMaquina();
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Não foi possível concluir a ação. Cheque se está conectado à Intranet e Internet. Caso o problema persista comunique o administrador da aplicação");
+            }
+        }
+        private void HistoricoAcessoItemClick(object sender, EventArgs e)
+        {
+            try
+            {
+                WebScrap.HistoricoAcesso();
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Não foi possível concluir a ação. Cheque se está conectado à Intranet e Internet. Caso o problema persista comunique o administrador da aplicação");
+            }
+        }
+
         private void VisualHistoricoItemClick(object sender, EventArgs e)
         {
-            AddTab(Path.Combine(Environment.CurrentDirectory, "Documentos", "log.txt"));
+            AddTab(Path.Combine(WebScrap.DocDir, "log.txt"));
         }
         private void ExitMenuItemClick(object sender, EventArgs e)
         {

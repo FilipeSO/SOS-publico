@@ -47,6 +47,9 @@
             this.redoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.selectAllMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.historicoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.atualizaçãoPorMáquinaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.acessoPorUsuárioToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.configuraçõesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.updateStatusToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exibirMsgConsoleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -56,6 +59,8 @@
             this.updateStartToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.visualizarHistóricoDeAtualizaçãoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.forcarAtualizacaoCompletaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.browserTabControl = new System.Windows.Forms.TabControl();
             this.btnNewTab = new System.Windows.Forms.TabPage();
@@ -79,6 +84,7 @@
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.editToolStripMenuItem,
+            this.historicoToolStripMenuItem,
             this.configuraçõesToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
@@ -219,6 +225,29 @@
             this.selectAllMenuItem.Text = "Selecionar tudo";
             this.selectAllMenuItem.Click += new System.EventHandler(this.SelectAllMenuItemClick);
             // 
+            // historicoToolStripMenuItem
+            // 
+            this.historicoToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.atualizaçãoPorMáquinaToolStripMenuItem,
+            this.acessoPorUsuárioToolStripMenuItem});
+            this.historicoToolStripMenuItem.Name = "historicoToolStripMenuItem";
+            this.historicoToolStripMenuItem.Size = new System.Drawing.Size(67, 20);
+            this.historicoToolStripMenuItem.Text = "Histórico";
+            // 
+            // atualizaçãoPorMáquinaToolStripMenuItem
+            // 
+            this.atualizaçãoPorMáquinaToolStripMenuItem.Name = "atualizaçãoPorMáquinaToolStripMenuItem";
+            this.atualizaçãoPorMáquinaToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+            this.atualizaçãoPorMáquinaToolStripMenuItem.Text = "Atualização por máquina";
+            this.atualizaçãoPorMáquinaToolStripMenuItem.Click += new System.EventHandler(this.HistoricoAtualizacaoMaquinaItemClick);
+            // 
+            // acessoPorUsuárioToolStripMenuItem
+            // 
+            this.acessoPorUsuárioToolStripMenuItem.Name = "acessoPorUsuárioToolStripMenuItem";
+            this.acessoPorUsuárioToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+            this.acessoPorUsuárioToolStripMenuItem.Text = "Acesso por usuário";
+            this.acessoPorUsuárioToolStripMenuItem.Click += new System.EventHandler(this.HistoricoAcessoItemClick);
+            // 
             // configuraçõesToolStripMenuItem
             // 
             this.configuraçõesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -230,6 +259,8 @@
             this.updateStartToolStripMenuItem,
             this.visualizarHistóricoDeAtualizaçãoToolStripMenuItem,
             this.toolStripSeparator1,
+            this.forcarAtualizacaoCompletaToolStripMenuItem,
+            this.toolStripSeparator5,
             this.aboutToolStripMenuItem});
             this.configuraçõesToolStripMenuItem.Name = "configuraçõesToolStripMenuItem";
             this.configuraçõesToolStripMenuItem.Size = new System.Drawing.Size(96, 20);
@@ -286,6 +317,18 @@
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(318, 6);
+            // 
+            // forcarAtualizacaoCompletaToolStripMenuItem
+            // 
+            this.forcarAtualizacaoCompletaToolStripMenuItem.Name = "forcarAtualizacaoCompletaToolStripMenuItem";
+            this.forcarAtualizacaoCompletaToolStripMenuItem.Size = new System.Drawing.Size(321, 22);
+            this.forcarAtualizacaoCompletaToolStripMenuItem.Text = "Forçar atualização completa";
+            this.forcarAtualizacaoCompletaToolStripMenuItem.Click += new System.EventHandler(this.ForcarAtualizacaoCompletaItemClick);
+            // 
+            // toolStripSeparator5
+            // 
+            this.toolStripSeparator5.Name = "toolStripSeparator5";
+            this.toolStripSeparator5.Size = new System.Drawing.Size(318, 6);
             // 
             // aboutToolStripMenuItem
             // 
@@ -453,6 +496,11 @@
         private System.Windows.Forms.TreeView treeViewSearch;
         private System.Windows.Forms.Label treeviewStatusLabel;
         private System.Windows.Forms.ToolStripMenuItem visualizarHistóricoDeAtualizaçãoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem forcarAtualizacaoCompletaToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
+        private System.Windows.Forms.ToolStripMenuItem historicoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem atualizaçãoPorMáquinaToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem acessoPorUsuárioToolStripMenuItem;
     }
 }
 
