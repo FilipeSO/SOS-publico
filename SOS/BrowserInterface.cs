@@ -272,7 +272,9 @@ namespace SOS
         {
             if (e.Node.Tag != null)
             {
+#if !DEBUG
                 WebScrap.LogAcesso(e.Node.Tag.ToString(), e.Node.Text, false);
+#endif
                 if (e.Button == MouseButtons.Right)
                 {
                     treeViewSearch.SelectedNode = e.Node;
@@ -354,9 +356,9 @@ namespace SOS
             //    e.Graphics.DrawString(e.Node.Tag.ToString(), font, Brushes.Black, e.Bounds.Right, e.Bounds.Top);
             //}
         }
-        #endregion
+#endregion
 
-        #region Update methods
+#region Update methods
         private void UpdateStart()
         {
             if (OfflineMode == true)
@@ -407,9 +409,9 @@ namespace SOS
             if (File.Exists(e.Link.LinkData.ToString())) AddTab(e.Link.LinkData.ToString());
         }
 
-        #endregion
+#endregion
 
-        #region BrowserTabControl methods
+#region BrowserTabControl methods
         private BrowserTabUserControl GetCurrentTabControl()
         {
             if (browserTabControl.SelectedIndex == -1)
@@ -538,9 +540,9 @@ namespace SOS
 
             browserTabControl.ResumeLayout(true);
         }
-        #endregion
+#endregion
 
-        #region MenuStrip click methods
+#region MenuStrip click methods
         private void ForcarAtualizacaoCompletaItemClick(object sender, EventArgs e)
         {
             if (OfflineMode == true) return;
@@ -915,6 +917,6 @@ namespace SOS
 
             }
         }
-        #endregion
+#endregion
     }
 }

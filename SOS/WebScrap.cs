@@ -23,12 +23,13 @@ namespace SOS
 {
     public class WebScrap
     {
-        public static readonly string DocDir = Path.Combine(Path.GetPathRoot(AppDomain.CurrentDomain.BaseDirectory), "SOS-publico Documentos");
+        public static readonly string DocDir = Path.Combine(Path.GetPathRoot(AppDomain.CurrentDomain.BaseDirectory), "SOS Documentos");
         public static readonly string MpoDir = Path.Combine(DocDir, "MPO");
         public static readonly string DiagramasDir = Path.Combine(DocDir, "Diagramas");
         public static readonly string MopDir = Path.Combine(DocDir, "MPO", "MOP");
         public static readonly string MioDir = Path.Combine(DocDir, "MIO");
         public static readonly string MioRelacionadosDir = Path.Combine(DocDir, "MIO", "Relacionados");
+        private static readonly string FirebaseDbRoot = "https://fso-sos.firebaseio.com/";
         public static bool IsCDREAuthenticated = false;
         private static LinkLabel StatusOutputLinkLabel { get; set; }
 
@@ -49,6 +50,9 @@ namespace SOS
             {
                 File.Delete(item);
             }
+#if !DEBUG
+            LogUpdate(true, "Efetuou reset de documentos");
+#endif
         }
 
         public static CookieContainer cookieContainer = new CookieContainer();
@@ -81,18 +85,22 @@ namespace SOS
         {
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
+#if !DEBUG
             LogUpdate(false, "Iniciou aplicação");
+#endif
             LoadBookmarks();
             UpdateMPO();
             UpdateDiagramasONS();
             stopWatch.Stop();
+#if !DEBUG
             LogUpdate(true, $"Término da atualização em {stopWatch.Elapsed.TotalSeconds}s");
+#endif
         }
 
-        #region Log historico leitura
+#region Log historico leitura
         public static async void HistoricoAcesso()
         {
-            var resultPost = await client.GetAsync($"https://mpo-sos.firebaseio.com/acesso.json?orderBy=%22Data%22&limitToFirst=1000");
+            var resultPost = await client.GetAsync($"{ FirebaseDbRoot }/acesso.json?orderBy=%22Data%22&limitToFirst=1000");
             var content = await resultPost.Content.ReadAsStringAsync();
             var listaHistoricoAcesso = new List<ModelHistoricoAcessoJson>();
 
@@ -114,7 +122,7 @@ namespace SOS
         }
         public static async void HistoricoMaquina()
         {
-            var resultPost = await client.GetAsync($"https://mpo-sos.firebaseio.com/app.json?orderBy=%22Concluido%22&equalTo=true&limitToFirst=1000");
+            var resultPost = await client.GetAsync($"{ FirebaseDbRoot }/app.json?orderBy=%22Concluido%22&equalTo=true&limitToFirst=1000");
             var content = await resultPost.Content.ReadAsStringAsync();
             var listaHistoricoMaquina = new List<ModelHistoricoUpdateJson>();
 
@@ -142,9 +150,9 @@ namespace SOS
             dtDateTime = dtDateTime.AddMilliseconds(unixTimeStamp).ToLocalTime();
             return dtDateTime;
         }
-        #endregion
+#endregion
 
-        #region Logging methods
+#region Logging methods
         private static ModelHistoricoAcesso ultimoHistorico;
         public static async void LogAcesso(string url, string index, bool SSC)
         {
@@ -164,7 +172,7 @@ namespace SOS
             {
                 var jsonHistorico = JsonConvert.SerializeObject(historico);
                 var httpContent = new StringContent(jsonHistorico, Encoding.UTF8, "application/json");
-                var resultPost = await client.PostAsync($"https://mpo-sos.firebaseio.com/acesso.json", httpContent);
+                var resultPost = await client.PostAsync($"{ FirebaseDbRoot }/acesso.json", httpContent);
                 ultimoHistorico = historico;
             }
         }
@@ -184,7 +192,7 @@ namespace SOS
             };
             var jsonHistorico = JsonConvert.SerializeObject(historico);
             var httpContent = new StringContent(jsonHistorico, Encoding.UTF8, "application/json");
-            var resultPost = await client.PostAsync($"https://mpo-sos.firebaseio.com/app.json", httpContent);
+            var resultPost = await client.PostAsync($"{ FirebaseDbRoot }/app.json", httpContent);
         }
 
         static void LogUpdate(string report, bool display = false)
@@ -200,9 +208,9 @@ namespace SOS
         }
         private static bool AppendLog = false;
 
-        #endregion
+#endregion
 
-        #region Indexing methods
+#region Indexing methods
         private static HashSet<ModelSearchBookmark> LocalBookmarks;
         private static FileInfo jsonBookmarkFile = new FileInfo(Path.Combine(DocDir, "bookmarks.json"));
         private static void LoadBookmarks()
@@ -259,15 +267,15 @@ namespace SOS
             }
             return listBookmarks;
         }
-        #endregion
+#endregion
 
-        #region ONS MPO
+#region ONS MPO
 
         static void UpdateMPO()
         {
             LogUpdate("#Início - Procedimentos da Operação (MPO)", true);
             LogUpdate("ons.org.br/ conectando...", true);
-            IEnumerable<ChildItem> docsMPO = ScrapMPOAsync("FURNAS").GetAwaiter().GetResult();
+            IEnumerable<ChildItem> docsMPO = ScrapMPOAsync().GetAwaiter().GetResult();
             int totalItems = docsMPO.Count();
             int counter = 1;
 
@@ -366,7 +374,7 @@ namespace SOS
             LogUpdate("#Término - Procedimentos da Operação (MPO)", true);
         }
 
-        static async Task<IEnumerable<ChildItem>> ScrapMPOAsync(string agente)
+        static async Task<IEnumerable<ChildItem>> ScrapMPOAsync(string agente = null)
         {
             string requestToken = await GetRequestDigestToken();
             ModelMPO docs = await GetModelMPO(requestToken);
@@ -419,9 +427,9 @@ namespace SOS
             ModelMPO documentos = JsonConvert.DeserializeObject<ModelMPO>(resultContent);
             return documentos;
         }
-        #endregion WEBSCRAP ONS MPO
+#endregion WEBSCRAP ONS MPO
 
-        #region ONS DIAGRAMAS
+#region ONS DIAGRAMAS
 
         static void UpdateDiagramasONS()
         {
@@ -557,6 +565,6 @@ namespace SOS
             if (cookieContainer.Count == 3) IsCDREAuthenticated = true;
         }
 
-        #endregion ONS DIAGRAMAS
+#endregion ONS DIAGRAMAS
     }
 }
