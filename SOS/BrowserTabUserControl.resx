@@ -117,41 +117,27 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="arrow_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\arrow_down.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <metadata name="toolStrip2.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="findPreviousButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABeSURBVGhD7dFLCoAwEAPQHt2bK0IHuhDxB52R9yD7hDQA
+        AAB+aukpaS++9pQbMZYvN+KofCT9iLPykbQjrpSPpBtxp3wkzYgn5SPTR7wpH5k24ovykelPAAAAQC2t
+        bTCYY6fDmFtaAAAAAElFTkSuQmCC
+</value>
   </data>
-  <data name="arrow_left_solid" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\arrow-left-solid.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="findNextButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABfSURBVGhD7c9LCoAwEETBHN2bq1k0uFDxE0gCVTDb4XUB
+        AAAAXlv2Wxtd/dVFixHd4uPPiO7x8WXEMPHxZsRw8fFkxLDxcTdi+Pg4GzFNfBxHTBcfNXzaeAAAAK6V
+        sgHHMWOnKfxjkQAAAABJRU5ErkJggg==
+</value>
   </data>
-  <data name="arrow_right_solid" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\arrow-right-solid.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="arrow_up" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\arrow_up.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Dangerous_Creatures_Recycle_Empty" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Dangerous Creatures Recycle Empty.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Dangerous_Creatures_Recycle_Full" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Dangerous Creatures Recycle Full.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="plus_solid" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\plus-solid.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="redo_alt_solid" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\redo-alt-solid.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="times_circle_regular" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\times-circle-regular.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="times_solid" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\times-solid.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="aboutimg" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\aboutimg.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="logo_cdre" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\logo_cdre.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
+  <metadata name="toolStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>122, 17</value>
+  </metadata>
 </root>

@@ -117,41 +117,58 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="arrow_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\arrow_down.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="arrow_left_solid" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\arrow-left-solid.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="arrow_right_solid" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\arrow-right-solid.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="arrow_up" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\arrow_up.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Dangerous_Creatures_Recycle_Empty" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Dangerous Creatures Recycle Empty.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Dangerous_Creatures_Recycle_Full" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Dangerous Creatures Recycle Full.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="plus_solid" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\plus-solid.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="redo_alt_solid" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\redo-alt-solid.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="times_circle_regular" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\times-circle-regular.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="times_solid" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\times-solid.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="aboutimg" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\aboutimg.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="logo_cdre" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\logo_cdre.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <metadata name="menuStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        AAABAAMAMDAQAAAAAABoBgAANgAAACAgEAAAAAAA6AIAAJ4GAAAQEBAAAAAAACgBAACGCQAAKAAAADAA
+        AABgAAAAAQAEAAAAAAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAIAAAACAgACAAAAAgACAAICA
+        AADAwMAAgICAAAAA/wAA/wAAAP//AP8AAAD/AP8A//8AAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAM0AANAAAAAAAAAAAAAAAAAAAAAAAADQAAzQAA0AAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAzQAMAAAAA
+        AAAAAAAAAAAAM0AACIiIhogAAANAAAAAAAAAAAAAAAAAAzCIh3Z3d3eGiAA0AAAAAAAAAAAAkAA0AAh3
+        Z3d3d2d3d4gAAwMAAAAAAAA7sAADCIZ3d3d2czd3dneIAEMAAAAAAAuzuQAAZ3c3d2d3d3dnd3d3aAMA
+        AAAAAIi7O5AId3djd3d3Z3d3d2d3d4BDAAAAAACIszCGM3d3dnf/M/v/93N2d3gDAAAAAAAAiAh3d2d3
+        //+//z//v/83d2eAQwAAAAAAAAZ3d3/7////+///8/v/c3d2AwAAAAADQIcze/M///s////7/z//+zd4
+        AwAAAAAAMIdn/z//v//zP7////+//zd3YEAAAAAEBnd///v////7////+/////t3gEAAAAAzCHf/v///
+        M7////+/////v/93eAAAAAAACG//M/+/////v/8z/7//P/+3eACLkAAIh3/7////+/////v/P//78//3
+        dgCLO5AIZ////7////+/////v///87//d4CLu7uYd/v/u7u5u7u7ub////v////7N4CDs7O4d/+zubu7
+        s7m7u7O5////+///N4CLu7u4f7ubu7u7m7u7u5u7u/+/////t4CLs7iIubu7u7m7u7u5u7uwCbv/8/v/
+        94AIuIAIu7u7m7u7u5u7u7APsLu/vz//92AIgAAAi5uzu7ubs7u7kA/7sJuz//+z94AAAAAAi7u5u7u7
+        ubu7D/uzuwu5v///O4AAAAAAmLu7u5O7u7uY/7O7Owm7u7//NwAAAAibu4m7u7u5u7uP87s7s7C7u7/7
+        9wAAAAi7O7izubu7s7j/uzuzu7Czubv/9wAAAIk7uICLu7u7m7j/O7O7uIubu7v/sAAAAIu4gAAIu7m7
+        u4/7u7s7ibsRG7m/8AAAAIiAAAADiLu7u4/zuzu7i7G7uLu/8AAAAAAAAAA0AIibs7iIiIiIuxs0S4ub
+        AwAAAAAAAAAAADSIubu7u7m7uxuAS4u7AwAAAAAAAAAAA0AAiLuTu7u7kxs4O4OwOAAAAAAAAAAAAAAD
+        QIi7ubu7u7G7uLsDgAAAAAAAAAAAAAAAAAOIu7O5u7sRGbA4AAAAAAAAAAAAAAAAADQwiIu7u7ubsAAA
+        AAAAAAAAAAAAAAAAA0AAADiIubuwAAAAAAAAAAAAAAAAAAAAAAAAA0AAiIiAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAA0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAANAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///////8AAP//
+        /////wAA////////AAD///45//8AAP//5xz//wAA///wAG//AAD//EAAJ/8AAP9+AAAD/wAA/DIAAAK/
+        AAD4OAAAAD8AAPAYAAAAPwAA8AAAAAAPAAD8AAAAAA8AAP8AAAAAAwAA/8AAAAADAAD+AAAAAAMAAP8A
+        AAAAAQAA/gAAAAABAAD8AAAAAAEAAJ8AAAAAAQAABgAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAhgAAAAAAAACfAAAAAAAAAP8AAAAAAAAA/AAAAAABAAD4AAAAAAEAAPgA
+        AAAAAQAA8BAAAAADAADweAAAAAMAAPH4AAAAAwAA//MAAAADAAD//wAAAAMAAP/+cAAAAwAA///kAAAH
+        AAD///4AAA8AAP///EAAfwAA///58AH/AAD////nB/8AAP////+f/wAA/////z//AAD///////8AAP//
+        /////wAA////////AAAoAAAAIAAAAEAAAAABAAQAAAAAAIACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        gAAAgAAAAICAAIAAAACAAIAAgIAAAMDAwACAgIAAAAD/AAD/AAAA//8A/wAAAP8A/wD//wAA////AAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA0AANAAAAAAAAAAAAAAAAAA0AANAAAAA
+        AAAAAAAAA0AAAAAAAAMAAAAAAAAAAAAwAIiIhogAQDAAAAAACbAACIh3Z3d3iAA0AAAACzuQCId2d3dz
+        dneIBAAAAIizsIZ3dzN2dzd3doADAAAAiDB3d2f///+3dzd4AwAAAzQGd38z+z///ztzd4AwAAADB3+/
+        ///zv//z/2dwQAAAAGfzP/+/////v//3eACJAAB///v////78///+3gAg7kH/7///7s///8/vz93gIu7
+        i///+7m7u7/7///z9oCLO4/7uTu7O7kwu//7//eAi7iLu7u7m7u7Dwu7//+3gIOACLk7uzu5APMLubvz
+        /4CIAAi7u5u7sP87MLu7nz+AAAAAi7s7u5j7s7Cbu7v/YAAAk7i7ubuPszuLsRG5vwAACbuAi7s7iIiI
+        ixtEg7sAAIuIADi7ubu7u7kYBIu5AACIAANAiLs7uTu7GIuLsDAAAAAAAAOIu7u7m7ERuwMwAAAAAAA0
+        AIg7uzu5uwAzAAAAAAAAAAADiIu7uwAAAAAAAAAAAAAANAAIiIgAAAAAAAAAAAAAAAAAADQAAAAAAAAA
+        AAAAAAAAAANAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////////////+c////zn//+cAv/5wABf4IAAD8AA
+        AA/AAAAL8AAAA+AAAAH4AAABOAAAAQgAAAEAAAAAAAAAAAAAAAAAAAAAGAAAADgAAADwAAAA4AAAAcEA
+        AAHDAAABzkAAAf/gAAH/zAAD//4AP//84P////P////n//////8oAAAAEAAAACAAAAABAAQAAAAAAMAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAgAAAAICAAIAAAACAAIAAgIAAAMDAwACAgIAAAAD/AAD/
+        AAAA//8A/wAAAP8A/wD//wAA////AAAAADAAAAAAAAAAA0AwAAAAuQAAAAQDAACLAGd3YAMAAAB3d2d3
+        cEAAAHb/83Z3AAgH/7P/P3YAiY8///v/P3CLj/s7uP/78IiLO7mLi78wgIu5uLu4i/AACLO4iDCLAwAJ
+        iLubs5sDALgAiLO7ADAIgANAiIhAAAAAAAAwAwAA/f8AAM5fAACECwAAwAMAAOABAADgAQAAAAEAAAAA
+        AAAAAAAAAAAAAEAAAADgAAAAwAAAAIwBAACZBwAA/28AAA==
+</value>
   </data>
 </root>

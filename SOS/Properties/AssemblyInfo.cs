@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // As informações gerais sobre um assembly são controladas por
 // conjunto de atributos. Altere estes valores de atributo para modificar as informações
 // associada a um assembly.
-[assembly: AssemblyTitle("WindowsFormsApp2")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("SOS")]
+[assembly: AssemblyDescription("Aplicação destinada a gestão e controle de versão de documentos necessários às salas de controle de agentes da operação do sistema elétrico brasileiro.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("WindowsFormsApp2")]
-[assembly: AssemblyCopyright("Copyright ©  2019")]
+[assembly: AssemblyCompany("fsaolive@gmail.com")]
+[assembly: AssemblyProduct("SOS - Suporte à Operação de Sistemas Elétricos")]
+[assembly: AssemblyCopyright("Copyright ©  2016-2019 Filipe S. O.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

@@ -1,3 +1,4 @@
-/SOS/bin/Debug/Documentos
-/SOS/obj
+bin/
+obj/
+packages/
 .vs/
