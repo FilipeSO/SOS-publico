@@ -30,9 +30,9 @@ A instalação da aplicação é individual por usuário, entretanto os document
 * **Filipe Salles de Oliveira**
 
 ## Evolução do SOS
-* EDAO XIV (2016) [Artigo](docs/XIV-EDAO-SOS_FSO_ARTIGO.pdf) [Apresentação](docs/XIV-EDAO-SOS_FSO_SLIDES.pdf)
-* SNPTEE XXIV (2017) [Artigo](docs/XXIV-SNPTEE-SOS_FSO_ARTIGO.pdf) [Apresentação](docs/XXIV-SNPTEE-SOS_FSO_SLIDES.pdf)
-* EDAO XV (2018) [Artigo](docs/XV-EDAO-SOS_FSO_ARTIGO.pdf) [Apresentação](docs/XV-EDAO-SOS_FSO_SLIDES.pdf)
+* EDAO XIV (2016) - [Artigo](docs/XIV-EDAO-SOS_FSO_ARTIGO.pdf) | [Apresentação](docs/XIV-EDAO-SOS_FSO_SLIDES.pdf)
+* SNPTEE XXIV (2017) - [Artigo](docs/XXIV-SNPTEE-SOS_FSO_ARTIGO.pdf) | [Apresentação](docs/XXIV-SNPTEE-SOS_FSO_SLIDES.pdf)
+* EDAO XV (2018) - [Artigo](docs/XV-EDAO-SOS_FSO_ARTIGO.pdf) | [Apresentação](docs/XV-EDAO-SOS_FSO_SLIDES.pdf)
 
 ## Licença
 Este projeto está licenciado sob a licença MIT - consulte o arquivo [LICENSE](LICENSE) para obter detalhes
