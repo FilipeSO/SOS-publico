@@ -8,10 +8,10 @@ Aplicação destinada a gestão, controle de versão, indexação e pesquisa de 
 * Diagramas Unifilares Rede de Operação
 * Diagramas Unifilares Rede de Supervisão
 * Diagramas Operativos Hidráulicos
-A instalação da aplicação é por usuário, entretanto todos os documentos são salvos e indexados para pesquisa em drive local compartilhado por todos os usuários.
 
 ## Como usar
 Última versão disponível do software para uso está disponível em Releases. A aplicação irá solicitar confirmação de credenciais da  plataforma [CDRE ONS](https://cdre.ons.org.br) para iniciar o backup local de documentos.
+A instalação da aplicação é individual por usuário, entretanto os documentos são salvos e indexados para pesquisa em drive local compartilhado por todos os usuários.
 
 ### Pré-requisitos
 * .NET Framework 4.6
