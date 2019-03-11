@@ -11,7 +11,7 @@ Aplicação destinada a gestão, controle de versão, indexação e pesquisa de 
 A instalação da aplicação é por usuário, entretanto todos os documentos são salvos e indexados para pesquisa em drive local compartilhado por todos os usuários.
 
 ## Como usar
-Última versão disponível do software para uso está disponível em Releases. A aplicação irá solicitar confirmação de credenciais da  plataforma [CDRE ONS] (https://cdre.ons.org.br) para iniciar o backup local de documentos.
+Última versão disponível do software para uso está disponível em Releases. A aplicação irá solicitar confirmação de credenciais da  plataforma [CDRE ONS](https://cdre.ons.org.br) para iniciar o backup local de documentos.
 
 ### Pré-requisitos
 * .NET Framework 4.6
@@ -29,13 +29,13 @@ A instalação da aplicação é por usuário, entretanto todos os documentos s�
 ## Autor
 * **Filipe Salles de Oliveira**
 
-## História SOS
+## Evolução do SOS
 * EDAO XIV (2016)
 * SNPTEE XXIV (2017)
 * EDAO XV (2018)
 
 ## Licença
-Este projeto está licenciado sob a licença MIT - consulte o arquivo [LICENSE.md] (LICENSE.md) para obter detalhes
+Este projeto está licenciado sob a licença MIT - consulte o arquivo [LICENSE](LICENSE) para obter detalhes
 
 ## AVISO LEGAL
-O Operador Nacional do Sistema Elétrico (ONS) não tem qualquer participação com este projeto de software livre e autenticação com sua plataforma [CDRE ONS] (https://cdre.ons.org.br) é de caráter autorizativo individual para permitir o download de documentos que seu nível de acesso garante. A autenticação é necessária para download de quaisquer documentos, independente se disponível ao público, como o MPO, uma vez que a aplicação é destinada à usuários do setor elétrico que não raramente são credenciados à plataforma.
+O Operador Nacional do Sistema Elétrico (ONS) não tem qualquer participação com este projeto e a autenticação com sua plataforma [CDRE ONS](https://cdre.ons.org.br) é de caráter autorizativo individual para possibilitar o download de documentos que o nível de acesso do usuário garante. A autenticação é necessária para download de quaisquer documentos, independente se disponível ao público, como o MPO, uma vez que a aplicação é destinada à usuários do setor elétrico que não raramente são credenciados à plataforma.
