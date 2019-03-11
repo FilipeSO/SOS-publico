@@ -1,6 +1,6 @@
 # ![sos logo](https://raw.githubusercontent.com/FilipeSO/SOS-publico/master/SOS/Resources/Dangerous%20Creatures%20Recycle%20Full.ico) SOS - Suporte à Operação de Sistemas Elétricos
 ![AppVeyor](https://img.shields.io/appveyor/ci/FilipeSO/sos-publico.svg)
-![GitHub](https://img.shields.io/github/license/FilipeSO/SOS-publico.svg?style=plastic)
+![GitHub](https://img.shields.io/github/license/FilipeSO/SOS-publico.svg)
 
 Aplicação destinada a gestão, controle de versão, indexação e pesquisa de documentos relacionados à operação do sistema elétrico. Estão inclusos atualmente na relação de documentos disponíveis na aplicação: 
 * Manual de Procedimentos da Operação (MPO - Procedimentos de Rede Módulo 10 e submódulos)
