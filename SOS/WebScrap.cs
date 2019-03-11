@@ -100,47 +100,61 @@ namespace SOS
 #region Log historico leitura
         public static async void HistoricoAcesso()
         {
-            var resultPost = await client.GetAsync($"{ FirebaseDbRoot }/acesso.json?orderBy=%22Data%22&limitToFirst=1000");
-            var content = await resultPost.Content.ReadAsStringAsync();
-            var listaHistoricoAcesso = new List<ModelHistoricoAcessoJson>();
-
-            foreach (Match match in Regex.Matches(content, "{\"D.*?}"))
+            try
             {
-                listaHistoricoAcesso.Add(JsonConvert.DeserializeObject<ModelHistoricoAcessoJson>(match.Value));
+                var resultPost = await client.GetAsync($"{ FirebaseDbRoot }/acesso.json?orderBy=%22Data%22&limitToFirst=1000");
+                var content = await resultPost.Content.ReadAsStringAsync();
+                var listaHistoricoAcesso = new List<ModelHistoricoAcessoJson>();
+
+                foreach (Match match in Regex.Matches(content, "{\"D.*?}"))
+                {
+                    listaHistoricoAcesso.Add(JsonConvert.DeserializeObject<ModelHistoricoAcessoJson>(match.Value));
+                }
+                listaHistoricoAcesso.ForEach(s => s.Data = UnixTimeStampToDateTime(Convert.ToDouble(s.Data)));
+                listaHistoricoAcesso = listaHistoricoAcesso.OrderByDescending(o => o.Data).ToList();
+
+                var t = new Thread(() =>
+                {
+                    Historico historico = new Historico(listaHistoricoAcesso, "acesso");
+                    historico.ShowDialog();
+                });
+                t.SetApartmentState(ApartmentState.STA);
+                t.Start();
+                t.Join();
             }
-            listaHistoricoAcesso.ForEach(s => s.Data = UnixTimeStampToDateTime(Convert.ToDouble(s.Data)));
-            listaHistoricoAcesso = listaHistoricoAcesso.OrderByDescending(o => o.Data).ToList();
-
-            var t = new Thread(() =>
+            catch (Exception)
             {
-                Historico historico = new Historico(listaHistoricoAcesso, "acesso");
-                historico.ShowDialog();
-            });
-            t.SetApartmentState(ApartmentState.STA);
-            t.Start();
-            t.Join();
+            }
+           
         }
         public static async void HistoricoMaquina()
         {
-            var resultPost = await client.GetAsync($"{ FirebaseDbRoot }/app.json?orderBy=%22Concluido%22&equalTo=true&limitToFirst=1000");
-            var content = await resultPost.Content.ReadAsStringAsync();
-            var listaHistoricoMaquina = new List<ModelHistoricoUpdateJson>();
-
-            foreach (Match match in Regex.Matches(content, "{\"C.*?}"))
+            try
             {
-                listaHistoricoMaquina.Add(JsonConvert.DeserializeObject<ModelHistoricoUpdateJson>(match.Value));
+                var resultPost = await client.GetAsync($"{ FirebaseDbRoot }/app.json?orderBy=%22Concluido%22&equalTo=true&limitToFirst=1000");
+                var content = await resultPost.Content.ReadAsStringAsync();
+                var listaHistoricoMaquina = new List<ModelHistoricoUpdateJson>();
+
+                foreach (Match match in Regex.Matches(content, "{\"C.*?}"))
+                {
+                    listaHistoricoMaquina.Add(JsonConvert.DeserializeObject<ModelHistoricoUpdateJson>(match.Value));
+                }
+                listaHistoricoMaquina.ForEach(s => s.Data = UnixTimeStampToDateTime(Convert.ToDouble(s.Data)));
+                listaHistoricoMaquina = listaHistoricoMaquina.OrderByDescending(o => o.Data).ToList();
+
+                var t = new Thread(() =>
+                {
+                    Historico historico = new Historico(listaHistoricoMaquina, "maquina");
+                    historico.ShowDialog();
+                });
+                t.SetApartmentState(ApartmentState.STA);
+                t.Start();
+                t.Join();
             }
-            listaHistoricoMaquina.ForEach(s => s.Data = UnixTimeStampToDateTime(Convert.ToDouble(s.Data)));
-            listaHistoricoMaquina = listaHistoricoMaquina.OrderByDescending(o => o.Data).ToList();
+            catch (Exception)
+            {                
+            }
 
-            var t = new Thread(() =>
-            {
-                Historico historico = new Historico(listaHistoricoMaquina, "maquina");
-                historico.ShowDialog();
-            });
-            t.SetApartmentState(ApartmentState.STA);
-            t.Start();
-            t.Join();
         }
 
         public static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
@@ -156,43 +170,55 @@ namespace SOS
         private static ModelHistoricoAcesso ultimoHistorico;
         public static async void LogAcesso(string url, string index, bool SSC)
         {
-            ModelHistoricoAcesso historico = new ModelHistoricoAcesso
+            try
             {
-                Data = new Dictionary<string, object>
+                ModelHistoricoAcesso historico = new ModelHistoricoAcesso
                 {
-                    [".sv"] = "timestamp"
-                },
-                PCMachineName = Environment.MachineName,
-                PCUsername = Environment.UserName,
-                SSC = SSC,
-                Url = url,
-                Indice = index
-            };
-            if (historico != ultimoHistorico)
+                    Data = new Dictionary<string, object>
+                    {
+                        [".sv"] = "timestamp"
+                    },
+                    PCMachineName = Environment.MachineName,
+                    PCUsername = Environment.UserName,
+                    SSC = SSC,
+                    Url = url,
+                    Indice = index
+                };
+                if (historico != ultimoHistorico)
+                {
+                    var jsonHistorico = JsonConvert.SerializeObject(historico);
+                    var httpContent = new StringContent(jsonHistorico, Encoding.UTF8, "application/json");
+                    var resultPost = await client.PostAsync($"{ FirebaseDbRoot }/acesso.json", httpContent);
+                    ultimoHistorico = historico;
+                }
+            }
+            catch (Exception)
             {
-                var jsonHistorico = JsonConvert.SerializeObject(historico);
-                var httpContent = new StringContent(jsonHistorico, Encoding.UTF8, "application/json");
-                var resultPost = await client.PostAsync($"{ FirebaseDbRoot }/acesso.json", httpContent);
-                ultimoHistorico = historico;
             }
         }
 
         public static async void LogUpdate(bool concluido, string msg)
         {
-            ModelHistoricoUpdate historico = new ModelHistoricoUpdate
+            try
             {
-                Data = new Dictionary<string, object>
+                ModelHistoricoUpdate historico = new ModelHistoricoUpdate
                 {
-                    [".sv"] = "timestamp"
-                },
-                PCMachineName = Environment.MachineName,
-                PCUsername = Environment.UserName,
-                Concluido = concluido,
-                Mensagem = msg
-            };
-            var jsonHistorico = JsonConvert.SerializeObject(historico);
-            var httpContent = new StringContent(jsonHistorico, Encoding.UTF8, "application/json");
-            var resultPost = await client.PostAsync($"{ FirebaseDbRoot }/app.json", httpContent);
+                    Data = new Dictionary<string, object>
+                    {
+                        [".sv"] = "timestamp"
+                    },
+                    PCMachineName = Environment.MachineName,
+                    PCUsername = Environment.UserName,
+                    Concluido = concluido,
+                    Mensagem = msg
+                };
+                var jsonHistorico = JsonConvert.SerializeObject(historico);
+                var httpContent = new StringContent(jsonHistorico, Encoding.UTF8, "application/json");
+                var resultPost = await client.PostAsync($"{ FirebaseDbRoot }/app.json", httpContent);
+            }
+            catch (Exception)
+            {
+            }
         }
 
         static void LogUpdate(string report, bool display = false)
