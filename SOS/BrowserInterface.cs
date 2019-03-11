@@ -272,9 +272,9 @@ namespace SOS
         {
             if (e.Node.Tag != null)
             {
-#if !DEBUG
+//#if !DEBUG
                 WebScrap.LogAcesso(e.Node.Tag.ToString(), e.Node.Text, false);
-#endif
+//#endif
                 if (e.Button == MouseButtons.Right)
                 {
                     treeViewSearch.SelectedNode = e.Node;

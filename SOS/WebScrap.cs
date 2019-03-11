@@ -184,7 +184,9 @@ namespace SOS
                     Url = url,
                     Indice = index
                 };
-                if (historico != ultimoHistorico)
+                string sHistorico = JsonConvert.SerializeObject(historico);
+                string sUltimoHistorico = JsonConvert.SerializeObject(ultimoHistorico);
+                if (sHistorico != sUltimoHistorico)
                 {
                     var jsonHistorico = JsonConvert.SerializeObject(historico);
                     var httpContent = new StringContent(jsonHistorico, Encoding.UTF8, "application/json");
