@@ -21,16 +21,20 @@ A instalação da aplicação é por usuário, entretanto todos os documentos s�
 * Visual Studio 2017
 * Plataforma 86x
 
-## Autor
+## Dependências
+* CefSharp
+* ITextSharp
+* Newtonsoft.Json
 
-* **Filipe Salles de Oliveira** - Desde 2016 tentando entender como otimizar indexação e pesquisa de documentos para utilização em salas de controle.
-Leia sobre como o SOS evoluiu até chegar a este repositório público:
+## Autor
+* **Filipe Salles de Oliveira**
+
+## História SOS
 * EDAO XIV (2016)
 * SNPTEE XXIV (2017)
 * EDAO XV (2018)
 
 ## Licença
-
 Este projeto está licenciado sob a licença MIT - consulte o arquivo [LICENSE.md] (LICENSE.md) para obter detalhes
 
 ## AVISO LEGAL
