@@ -21,19 +21,17 @@
   <script type="application/ld+json">
 {"@type":"WebSite","url":"https://filipeso.github.io/SOS-publico/","name":"SOS-publico","headline":"SOS - Suporte à Operação de Sistemas Elétricos","description":"Software para atualização automática local de documentos do Operador Nacional do Sistema (ONS); MPO, MOPs e diagramas de operação","@context":"http://schema.org"}</script>
 
-  <style class="anchorjs"></style>
-  <link rel="stylesheet" href="./SOS - Suporte à Operação de Sistemas Elétricos _ SOS-publico_files/style.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 </head>
 
 <body>
-  <div class="container-lg px-3 my-5 markdown-body">
+  <div class="container">
     <h1 id="-sos---suporte-à-operação-de-sistemas-elétricos"><img src="https://raw.githubusercontent.com/FilipeSO/SOS-publico/master/SOS/Resources/Dangerous%20Creatures%20Recycle%20Full.ico"
         alt="sos logo"> SOS - Suporte à Operação de Sistemas Elétricos</h1>
     <p><img src="https://img.shields.io/appveyor/ci/FilipeSO/sos-publico.svg" alt="AppVeyor">
       <img src="https://img.shields.io/github/license/FilipeSO/SOS-publico.svg" alt="GitHub"></p>
 
-    <p>Aplicação destinada a gestão, controle de versão, indexação e pesquisa de documentos relacionados à operação do
-      sistema elétrico. Estão inclusos atualmente na relação de documentos disponíveis na aplicação:</p>
+    <p>Aplicação destinada a gestão, controle de versão, indexação e pesquisa de documentos relacionados à operação do sistema elétrico brasileiro. </br>Estão inclusos atualmente na relação de documentos disponíveis na aplicação:</p>
     <ul>
       <li>Manual de Procedimentos da Operação (MPO - Procedimentos de Rede Módulo 10 e submódulos)</li>
       <li>Mensagens de Operação (MOPs)</li>
@@ -42,7 +40,7 @@
       <li>Diagramas Operativos Hidráulicos</li>
     </ul>
 
-    <h2 id="como-usar">Como usar<a class="anchorjs-link " href="https://filipeso.github.io/SOS-publico/#como-usar"
+    <h3 id="como-usar">Como usar<a class="anchorjs-link " href="https://filipeso.github.io/SOS-publico/#como-usar"
         aria-label="Anchor" data-anchorjs-icon="" style="font: 1em/1 anchorjs-icons; padding-left: 0.375em;"></a></h2>
     <p>Última versão disponível do software para uso está disponível em Releases. A aplicação irá solicitar confirmação
       de credenciais da plataforma <a href="https://cdre.ons.org.br/">CDRE ONS</a> para iniciar o backup local de
@@ -50,61 +48,45 @@
       A instalação da aplicação é individual por usuário, entretanto os documentos são salvos e indexados para pesquisa
       em drive local compartilhado por todos os usuários.</p>
 
-    <h3 id="pré-requisitos">Pré-requisitos<a class="anchorjs-link " href="https://filipeso.github.io/SOS-publico/#pr%C3%A9-requisitos"
+    <h4 id="pré-requisitos">Pré-requisitos<a class="anchorjs-link " href="https://filipeso.github.io/SOS-publico/#pr%C3%A9-requisitos"
         aria-label="Anchor" data-anchorjs-icon="" style="font: 1em/1 anchorjs-icons; padding-left: 0.375em;"></a></h3>
     <ul>
       <li>.NET Framework 4.6</li>
       <li>Microsoft Visual C++ 2013</li>
     </ul>
 
-    <h2 id="configuração-para-compilar-código-fonte">Configuração para compilar código fonte<a class="anchorjs-link "
-        href="https://filipeso.github.io/SOS-publico/#configura%C3%A7%C3%A3o-para-compilar-c%C3%B3digo-fonte"
-        aria-label="Anchor" data-anchorjs-icon="" style="font: 1em/1 anchorjs-icons; padding-left: 0.375em;"></a></h2>
-    <ul>
-      <li>Visual Studio 2017</li>
-      <li>Plataforma 86x</li>
-    </ul>
-
-    <h3 id="dependências">Dependências<a class="anchorjs-link " href="https://filipeso.github.io/SOS-publico/#depend%C3%AAncias"
-        aria-label="Anchor" data-anchorjs-icon="" style="font: 1em/1 anchorjs-icons; padding-left: 0.375em;"></a></h3>
-    <ul>
-      <li>CefSharp</li>
-      <li>ITextSharp</li>
-      <li>Newtonsoft.Json</li>
-    </ul>
-
-    <h2 id="autor">Autor<a class="anchorjs-link " href="https://filipeso.github.io/SOS-publico/#autor" aria-label="Anchor"
+    <h3 id="autor">Autor<a class="anchorjs-link " href="https://filipeso.github.io/SOS-publico/#autor" aria-label="Anchor"
         data-anchorjs-icon="" style="font: 1em/1 anchorjs-icons; padding-left: 0.375em;"></a></h2>
     <ul>
-      <li><strong>Filipe Salles de Oliveira</strong></li>
+      <li>Filipe Salles de Oliveira</li>
     </ul>
 
-    <h2 id="evolução-do-sos">Evolução do SOS<a class="anchorjs-link " href="https://filipeso.github.io/SOS-publico/#evolu%C3%A7%C3%A3o-do-sos"
+    <h3 id="evolução-do-sos">Evolução do SOS<a class="anchorjs-link " href="https://filipeso.github.io/SOS-publico/#evolu%C3%A7%C3%A3o-do-sos"
         aria-label="Anchor" data-anchorjs-icon="" style="font: 1em/1 anchorjs-icons; padding-left: 0.375em;"></a></h2>
     <ul>
       <li>
 
-        EDAO XIV (2016) - <a href="https://filipeso.github.io/SOS-publico/docs/XIV-EDAO-SOS_FSO_ARTIGO.pdf">Artigo</a>
+        EDAO XIV (2016) - <a href="https://filipeso.github.io/SOS-publico/docs/XIV-EDAO-SOS_FSO_ARTIGO.pdf">Artigo</a> |
         <a href="https://filipeso.github.io/SOS-publico/docs/XIV-EDAO-SOS_FSO_SLIDES.pdf">Apresentação</a>
 
       </li>
       <li>
-        SNPTEE XXIV (2017) - <a href="https://filipeso.github.io/SOS-publico/docs/XXIV-SNPTEE-SOS_FSO_ARTIGO.pdf">Artigo</a>
+        SNPTEE XXIV (2017) - <a href="https://filipeso.github.io/SOS-publico/docs/XXIV-SNPTEE-SOS_FSO_ARTIGO.pdf">Artigo</a> |
         <a href="https://filipeso.github.io/SOS-publico/docs/XXIV-SNPTEE-SOS_FSO_SLIDES.pdf">Apresentação</a>
 
       </li>
       <li>
-        EDAO XV (2018) - <a href="https://filipeso.github.io/SOS-publico/docs/XV-EDAO-SOS_FSO_ARTIGO.pdf">Artigo</a>
+        EDAO XV (2018) - <a href="https://filipeso.github.io/SOS-publico/docs/XV-EDAO-SOS_FSO_ARTIGO.pdf">Artigo</a> |
         <a href="https://filipeso.github.io/SOS-publico/docs/XV-EDAO-SOS_FSO_SLIDES.pdf">Apresentação</a>
       </li>
     </ul>
 
-    <h2 id="licença">Licença<a class="anchorjs-link " href="https://filipeso.github.io/SOS-publico/#licen%C3%A7a"
+    <h3 id="licença">Licença<a class="anchorjs-link " href="https://filipeso.github.io/SOS-publico/#licen%C3%A7a"
         aria-label="Anchor" data-anchorjs-icon="" style="font: 1em/1 anchorjs-icons; padding-left: 0.375em;"></a></h2>
-    <p>Este projeto está licenciado sob a licença MIT - consulte o arquivo <a href="https://filipeso.github.io/SOS-publico/LICENSE">LICENSE</a>
+    <p>Este projeto está licenciado sob a licença MIT - consulte o arquivo <a href="https://raw.githubusercontent.com/FilipeSO/SOS-publico/master/LICENSE">LICENSE</a>
       para obter detalhes</p>
 
-    <h2 id="aviso-legal">AVISO LEGAL<a class="anchorjs-link " href="https://filipeso.github.io/SOS-publico/#aviso-legal"
+    <h3 id="aviso-legal">AVISO LEGAL<a class="anchorjs-link " href="https://filipeso.github.io/SOS-publico/#aviso-legal"
         aria-label="Anchor" data-anchorjs-icon="" style="font: 1em/1 anchorjs-icons; padding-left: 0.375em;"></a></h2>
     <p>O Operador Nacional do Sistema Elétrico (ONS) não tem qualquer participação com este projeto e a autenticação
       com sua plataforma <a href="https://cdre.ons.org.br/">CDRE ONS</a> é de caráter autorizativo individual para
