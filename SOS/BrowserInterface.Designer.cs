@@ -433,6 +433,7 @@
             this.txtBookmarkSearch.Name = "txtBookmarkSearch";
             this.txtBookmarkSearch.Size = new System.Drawing.Size(243, 20);
             this.txtBookmarkSearch.TabIndex = 0;
+            this.txtBookmarkSearch.TextChanged += new System.EventHandler(this.TxtBookmarkSearchTextChanged);
             this.txtBookmarkSearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.TxtBookmarkSearchKeyDown);
             // 
             // BrowserInterface

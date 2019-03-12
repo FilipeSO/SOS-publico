@@ -267,6 +267,17 @@ namespace SOS
             }
             SearchBookmarks();
         }
+        private void TxtBookmarkSearchTextChanged(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtBookmarkSearch.Text))
+            {
+                SearchBookmarks();
+            }
+            else
+            {
+                return;
+            }
+        }
 
         private void TreeViewSearchNodeClick(object sender, TreeNodeMouseClickEventArgs e)
         {
