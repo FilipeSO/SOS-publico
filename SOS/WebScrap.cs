@@ -29,7 +29,7 @@ namespace SOS
         public static readonly string MopDir = Path.Combine(DocDir, "MPO", "MOP");
         public static readonly string MioDir = Path.Combine(DocDir, "MIO");
         public static readonly string MioRelacionadosDir = Path.Combine(DocDir, "MIO", "Relacionados");
-        private static readonly string FirebaseDbRoot = "https://fso-sos.firebaseio.com/";
+        private static readonly string FirebaseDbRoot = "https://mpo-sos.firebaseio.com/";
         public static bool IsCDREAuthenticated = false;
         private static LinkLabel StatusOutputLinkLabel { get; set; }
 
