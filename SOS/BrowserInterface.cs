@@ -23,7 +23,7 @@ namespace SOS
     {
         // Default to a small increment:
         private const double ZoomIncrement = 0.10;
-        private const string DefaultUrlForAddedTabs = "https://mposos.com.br";
+        private const string DefaultUrlForAddedTabs = "https://filipeso.github.io/SOS-publico/";
         
         private bool multiThreadedMessageLoopEnabled;
         private bool OfflineMode { get; set; }
