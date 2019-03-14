@@ -34,6 +34,10 @@ namespace SOS.Handlers
             }
         }
 
+        public void OnBeforeDownload(IBrowser browser, DownloadItem downloadItem, IBeforeDownloadCallback callback)
+        {
+        }
+
         public void OnDownloadUpdated(IWebBrowser chromiumWebBrowser, IBrowser browser, DownloadItem downloadItem, IDownloadItemCallback callback)
         {
             if (downloadItem.IsInProgress)
@@ -57,6 +61,11 @@ namespace SOS.Handlers
                 });                
             }
             OnDownloadUpdatedFired?.Invoke(this, downloadItem);
+        }
+
+        public void OnDownloadUpdated(IBrowser browser, DownloadItem downloadItem, IDownloadItemCallback callback)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -32,9 +32,9 @@ namespace SOS.Handlers
             //The V8Context is about to be released, use this notification to cancel any long running tasks your might have
         }
 
-        void IRenderProcessMessageHandler.OnUncaughtException(IWebBrowser browserControl, IBrowser browser, IFrame frame, JavascriptException exception)
-        {
-            Console.WriteLine("OnUncaughtException() - " + exception.Message);
-        }
+        //void IRenderProcessMessageHandler.OnUncaughtException(IWebBrowser browserControl, IBrowser browser, IFrame frame, JavascriptException exception)
+        //{
+        //    Console.WriteLine("OnUncaughtException() - " + exception.Message);
+        //}
     }
 }
