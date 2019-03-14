@@ -9,6 +9,10 @@ Aplicação destinada a gestão, controle de versão, indexação e pesquisa de 
 * Diagramas Unifilares Rede de Supervisão
 * Diagramas Operativos Hidráulicos
 
+## Como Funciona
+![sos uso0](https://raw.githubusercontent.com/FilipeSO/SOS-publico/master/docs/gif_uso_sos_0.gif) 
+![sos uso1](https://raw.githubusercontent.com/FilipeSO/SOS-publico/master/docs/gif_uso_sos_1.gif) 
+
 ## Pré-requisitos
 * .NET Framework 4.6
 * Microsoft Visual C++ 2013
