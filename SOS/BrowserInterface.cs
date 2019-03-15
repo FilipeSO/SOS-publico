@@ -24,7 +24,7 @@ namespace SOS
         // Default to a small increment:
         private const double ZoomIncrement = 0.10;
         private const string DefaultUrlForAddedTabs = "https://filipeso.github.io/SOS-publico/";
-        
+
         private bool multiThreadedMessageLoopEnabled;
         private bool OfflineMode { get; set; }
 
@@ -53,6 +53,7 @@ namespace SOS
             LoadReferences();
             UpdateStart();
         }
+
         #region Load reference docs / default treeview methods
         private void LoadReferences()
         {
@@ -99,7 +100,7 @@ namespace SOS
                 LocalRefsMOP = new HashSet<ChildItem>();
             }
         }
-        
+
         private void LoadDefaultTreeview()
         {
             treeViewSearch.BeginUpdate();
@@ -283,9 +284,9 @@ namespace SOS
         {
             if (e.Node.Tag != null)
             {
-//#if !DEBUG
+                //#if !DEBUG
                 WebScrap.LogAcesso(e.Node.Tag.ToString(), e.Node.Text, false);
-//#endif
+                //#endif
                 if (e.Button == MouseButtons.Right)
                 {
                     treeViewSearch.SelectedNode = e.Node;
@@ -367,9 +368,9 @@ namespace SOS
             //    e.Graphics.DrawString(e.Node.Tag.ToString(), font, Brushes.Black, e.Bounds.Right, e.Bounds.Top);
             //}
         }
-#endregion
+        #endregion
 
-#region Update methods
+        #region Update methods
         private void UpdateStart()
         {
             if (OfflineMode == true)
@@ -405,8 +406,7 @@ namespace SOS
                 }
                 catch (Exception ex)
                 {
-                    statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => statusOutputLinkLabel.Text = $"{DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")}: Não foi possível concluir a atualização de documentos. Cheque se está conectado à Intranet e Internet. Caso o problema persista comunique o administrador da aplicação");
-                    statusOutputLinkLabel.Enabled = true;
+                    statusOutputLinkLabel.InvokeOnUiThreadIfRequired(() => statusOutputLinkLabel.Text = $"{DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")}: Não foi possível concluir a atualização. Cheque se está conectado à Intranet e Internet e inicie nova atualização em Configuração>Iniciar atualização de documentos");
                     updateStartToolStripMenuItem.Enabled = true;
                     forcarAtualizacaoCompletaToolStripMenuItem.Enabled = true;
                     File.WriteAllText(Path.Combine(WebScrap.DocDir, "crash_report.txt"), $"Data: {ex.Data}{Environment.NewLine}Source:{ex.Source}{Environment.NewLine}StackTrace:{ex.StackTrace}{Environment.NewLine}TargetSite:{ex.TargetSite}{Environment.NewLine}InnerExceptionMessage:{ex.InnerException.Message}{Environment.NewLine}ExceptionMessage:{ex.Message}{Environment.NewLine}");
@@ -420,9 +420,9 @@ namespace SOS
             if (File.Exists(e.Link.LinkData.ToString())) AddTab(e.Link.LinkData.ToString());
         }
 
-#endregion
+        #endregion
 
-#region BrowserTabControl methods
+        #region BrowserTabControl methods
         private BrowserTabUserControl GetCurrentTabControl()
         {
             if (browserTabControl.SelectedIndex == -1)
@@ -551,9 +551,9 @@ namespace SOS
 
             browserTabControl.ResumeLayout(true);
         }
-#endregion
+        #endregion
 
-#region MenuStrip click methods
+        #region MenuStrip click methods
         private void ForcarAtualizacaoCompletaItemClick(object sender, EventArgs e)
         {
             if (OfflineMode == true) return;
@@ -928,6 +928,6 @@ namespace SOS
 
             }
         }
-#endregion
+        #endregion
     }
 }
