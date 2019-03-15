@@ -21,7 +21,20 @@ namespace SOS.Handlers
 
         public event EventHandler<DownloadItem> OnDownloadUpdatedFired;
 
-        public void OnBeforeDownload(IWebBrowser chromiumWebBrowser, IBrowser browser, DownloadItem downloadItem, IBeforeDownloadCallback callback)
+        //public void OnBeforeDownload(IWebBrowser chromiumWebBrowser, IBrowser browser, DownloadItem downloadItem, IBeforeDownloadCallback callback) cefsharp 71
+        //{
+        //    OnBeforeDownloadFired?.Invoke(this, downloadItem);
+
+        //    if (!callback.IsDisposed)
+        //    {
+        //        using (callback)
+        //        {
+        //            callback.Continue(downloadItem.SuggestedFileName, showDialog: true);
+        //        }
+        //    }
+        //}
+
+        public void OnBeforeDownload(IBrowser browser, DownloadItem downloadItem, IBeforeDownloadCallback callback)
         {
             OnBeforeDownloadFired?.Invoke(this, downloadItem);
 
@@ -34,11 +47,32 @@ namespace SOS.Handlers
             }
         }
 
-        public void OnBeforeDownload(IBrowser browser, DownloadItem downloadItem, IBeforeDownloadCallback callback)
-        {
-        }
+        //public void OnDownloadUpdated(IWebBrowser chromiumWebBrowser, IBrowser browser, DownloadItem downloadItem, IDownloadItemCallback callback) //cefsharp 71
+        //{
+        //    if (downloadItem.IsInProgress)
+        //    {
+        //        currentBrowserTab.InvokeOnUiThreadIfRequired(() =>
+        //        {
+        //            if (!currentBrowserTab.downloadOutputLabel.Visible) currentBrowserTab.downloadOutputLabel.Visible = true;
+        //            currentBrowserTab.downloadOutputLabel.Enabled = false;
+        //            //currentBrowserTab.downloadOutputLabel.LinkArea = new System.Windows.Forms.LinkArea(currentBrowserTab.downloadOutputLabel.Text.Length, currentBrowserTab.downloadOutputLabel.Text.Length);
+        //            currentBrowserTab.downloadOutputLabel.Text = $"Download {downloadItem.SuggestedFileName}: {((float)downloadItem.CurrentSpeed/1000000).ToString("0.00")} MB/s - {((float)downloadItem.ReceivedBytes/1000000).ToString("0.00")} MB de {((float)downloadItem.TotalBytes/1000000).ToString("0.00")} MB, destino: {downloadItem.FullPath}";                      
+        //        });
+        //    }
+        //    if (downloadItem.IsComplete)
+        //    {
+        //        currentBrowserTab.InvokeOnUiThreadIfRequired(() =>
+        //        {
+        //            currentBrowserTab.downloadOutputLabel.Enabled = true;
+        //            FileInfo downloadItemFile = new FileInfo(downloadItem.FullPath);
+        //            currentBrowserTab.downloadOutputLabel.Text = $"Download {downloadItemFile.Name} concluído disponível na pasta {downloadItemFile.DirectoryName}";
+        //            currentBrowserTab.downloadOutputLabel.Links.Add($"Download {downloadItemFile.Name} concluído disponível na pasta ".Length, downloadItemFile.DirectoryName.Length, downloadItemFile.DirectoryName);
+        //        });                
+        //    }
+        //    OnDownloadUpdatedFired?.Invoke(this, downloadItem);
+        //}
 
-        public void OnDownloadUpdated(IWebBrowser chromiumWebBrowser, IBrowser browser, DownloadItem downloadItem, IDownloadItemCallback callback)
+        public void OnDownloadUpdated(IBrowser browser, DownloadItem downloadItem, IDownloadItemCallback callback)
         {
             if (downloadItem.IsInProgress)
             {
@@ -47,7 +81,7 @@ namespace SOS.Handlers
                     if (!currentBrowserTab.downloadOutputLabel.Visible) currentBrowserTab.downloadOutputLabel.Visible = true;
                     currentBrowserTab.downloadOutputLabel.Enabled = false;
                     //currentBrowserTab.downloadOutputLabel.LinkArea = new System.Windows.Forms.LinkArea(currentBrowserTab.downloadOutputLabel.Text.Length, currentBrowserTab.downloadOutputLabel.Text.Length);
-                    currentBrowserTab.downloadOutputLabel.Text = $"Download {downloadItem.SuggestedFileName}: {((float)downloadItem.CurrentSpeed/1000000).ToString("0.00")} MB/s - {((float)downloadItem.ReceivedBytes/1000000).ToString("0.00")} MB de {((float)downloadItem.TotalBytes/1000000).ToString("0.00")} MB, destino: {downloadItem.FullPath}";                      
+                    currentBrowserTab.downloadOutputLabel.Text = $"Download {downloadItem.SuggestedFileName}: {((float)downloadItem.CurrentSpeed / 1000000).ToString("0.00")} MB/s - {((float)downloadItem.ReceivedBytes / 1000000).ToString("0.00")} MB de {((float)downloadItem.TotalBytes / 1000000).ToString("0.00")} MB, destino: {downloadItem.FullPath}";
                 });
             }
             if (downloadItem.IsComplete)
@@ -58,14 +92,9 @@ namespace SOS.Handlers
                     FileInfo downloadItemFile = new FileInfo(downloadItem.FullPath);
                     currentBrowserTab.downloadOutputLabel.Text = $"Download {downloadItemFile.Name} concluído disponível na pasta {downloadItemFile.DirectoryName}";
                     currentBrowserTab.downloadOutputLabel.Links.Add($"Download {downloadItemFile.Name} concluído disponível na pasta ".Length, downloadItemFile.DirectoryName.Length, downloadItemFile.DirectoryName);
-                });                
+                });
             }
             OnDownloadUpdatedFired?.Invoke(this, downloadItem);
-        }
-
-        public void OnDownloadUpdated(IBrowser browser, DownloadItem downloadItem, IDownloadItemCallback callback)
-        {
-            throw new NotImplementedException();
         }
     }
 }
